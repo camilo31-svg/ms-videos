@@ -1,0 +1,15 @@
+{
+  "name": "media-seva-player",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "catalog": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/crawl-catalog.ps1",
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/build.mjs && node --test tests/app.test.mjs"
+  }
+}

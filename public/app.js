@@ -1,0 +1,712 @@
+const STORAGE_KEYS = {
+  favorites: "media-seva-favorites-v1",
+  history: "media-seva-history-v1",
+  audioMode: "media-seva-audio-mode-v1"
+};
+
+const state = {
+  catalog: null,
+  activeTab: "browse",
+  path: [],
+  query: "",
+  current: null,
+  queue: [],
+  audioMode: localStorage.getItem(STORAGE_KEYS.audioMode) === "true",
+  favorites: readStorage(STORAGE_KEYS.favorites, []),
+  history: readStorage(STORAGE_KEYS.history, []),
+  installPrompt: null,
+  historyTimer: null
+};
+
+const els = {
+  body: document.body,
+  list: document.querySelector("#library-list"),
+  template: document.querySelector("#library-item-template"),
+  contentState: document.querySelector("#content-state"),
+  viewTitle: document.querySelector("#view-title"),
+  breadcrumb: document.querySelector("#breadcrumb"),
+  itemCount: document.querySelector("#item-count"),
+  backButton: document.querySelector("#back-button"),
+  searchToggle: document.querySelector("#search-toggle"),
+  searchPanel: document.querySelector("#search-panel"),
+  searchInput: document.querySelector("#search-input"),
+  searchClear: document.querySelector("#search-clear"),
+  installButton: document.querySelector("#install-button"),
+  favoriteCount: document.querySelector("#desktop-favorite-count"),
+  playerPane: document.querySelector("#player-pane"),
+  playerArtwork: document.querySelector("#player-artwork"),
+  playerPlaceholder: document.querySelector("#player-placeholder"),
+  video: document.querySelector("#video-player"),
+  audio: document.querySelector("#audio-player"),
+  nowLabel: document.querySelector("#now-playing-label"),
+  nowTitle: document.querySelector("#now-playing-title"),
+  nowPath: document.querySelector("#now-playing-path"),
+  playerFavorite: document.querySelector("#player-favorite"),
+  playButton: document.querySelector("#play-button"),
+  previousButton: document.querySelector("#previous-button"),
+  nextButton: document.querySelector("#next-button"),
+  seekBack: document.querySelector("#seek-back-button"),
+  seekForward: document.querySelector("#seek-forward-button"),
+  audioMode: document.querySelector("#audio-mode-toggle"),
+  downloadCurrent: document.querySelector("#download-current"),
+  miniPlayer: document.querySelector("#mini-player"),
+  miniTitle: document.querySelector("#mini-title"),
+  miniStatus: document.querySelector("#mini-status"),
+  miniPlay: document.querySelector("#mini-play"),
+  miniOpen: document.querySelector("#mini-open"),
+  mobilePlayerTab: document.querySelector("#mobile-player-tab")
+};
+
+function readStorage(key, fallback) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveStorage(key, value) {
+  localStorage.setItem(key, JSON.stringify(value));
+}
+
+function mediaKind(item) {
+  if (item.type === "video" || item.type === "audio") return item.type;
+  const extension = item.name?.split(".").pop()?.toLowerCase();
+  if (["mp4", "m4v", "webm", "mov"].includes(extension)) return "video";
+  if (["mp3", "m4a", "aac", "wav", "ogg", "flac"].includes(extension)) return "audio";
+  return item.type || "document";
+}
+
+function isPlayable(item) {
+  const kind = mediaKind(item);
+  return kind === "audio" || kind === "video";
+}
+
+function normalize(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function formatCount(count) {
+  return `${count} ${count === 1 ? "elemento" : "elementos"}`;
+}
+
+function currentFolder() {
+  if (!state.path.length) return state.catalog;
+  return state.path[state.path.length - 1];
+}
+
+function pathLabel(item) {
+  if (item.path) return item.path;
+  const parts = [...state.path.map((node) => node.name), item.name].filter(Boolean);
+  return parts.join(" / ");
+}
+
+function fileSnapshot(item) {
+  return {
+    id: item.id,
+    type: mediaKind(item),
+    name: item.name,
+    url: item.url,
+    size: item.size || "",
+    path: item.path || pathLabel(item)
+  };
+}
+
+function flattenCatalog(items, parents = [], output = []) {
+  for (const item of items || []) {
+    item._parents = parents;
+    output.push(item);
+    if (item.type === "folder") {
+      flattenCatalog(item.children, [...parents, item], output);
+    }
+  }
+  return output;
+}
+
+function setView(tab) {
+  state.activeTab = tab;
+  state.query = "";
+  els.searchInput.value = "";
+  els.searchClear.classList.add("hidden");
+  els.playerPane.classList.remove("mobile-open");
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === tab);
+  });
+  els.mobilePlayerTab.classList.remove("active");
+  render();
+}
+
+function getVisibleItems() {
+  if (!state.catalog) return [];
+  if (state.query) {
+    const query = normalize(state.query);
+    return flattenCatalog(state.catalog.items).filter((item) =>
+      normalize(`${item.name} ${item.path || ""}`).includes(query)
+    );
+  }
+  if (state.activeTab === "favorites") return state.favorites;
+  if (state.activeTab === "history") return state.history;
+  return currentFolder().items || currentFolder().children || [];
+}
+
+function visibleHeading(items) {
+  if (state.query) {
+    return {
+      title: "Resultados",
+      crumb: `Busqueda: ${state.query}`,
+      canGoBack: true
+    };
+  }
+  if (state.activeTab === "favorites") {
+    return { title: "Favoritos", crumb: "Tu biblioteca", canGoBack: true };
+  }
+  if (state.activeTab === "history") {
+    return { title: "Historial", crumb: "Escuchado recientemente", canGoBack: true };
+  }
+  return {
+    title: state.path.at(-1)?.name || state.catalog?.title || "Catalogo",
+    crumb: state.path.length ? ["Catalogo", ...state.path.slice(0, -1).map((node) => node.name)].join(" / ") : "Biblioteca",
+    canGoBack: state.path.length > 0
+  };
+}
+
+function render() {
+  if (!state.catalog) return;
+  const items = getVisibleItems();
+  const heading = visibleHeading(items);
+
+  els.viewTitle.textContent = heading.title;
+  els.breadcrumb.textContent = heading.crumb;
+  els.itemCount.textContent = formatCount(items.length);
+  els.backButton.classList.toggle("hidden", !heading.canGoBack);
+  els.favoriteCount.textContent = String(state.favorites.length);
+  els.list.replaceChildren();
+  els.contentState.classList.add("hidden");
+
+  if (!items.length) {
+    renderEmptyState();
+    return;
+  }
+
+  const queue = items.filter(isPlayable);
+  for (const item of items) {
+    els.list.append(createLibraryItem(item, queue));
+  }
+}
+
+function renderEmptyState() {
+  let title = "No hay elementos aqui";
+  let message = "Vuelve a la biblioteca para seguir explorando.";
+  if (state.query) {
+    title = "Sin resultados";
+    message = "Prueba con otro nombre, ano o tema.";
+  } else if (state.activeTab === "favorites") {
+    title = "Todavia no tienes favoritos";
+    message = "Marca el corazon de una grabacion para guardarla aqui.";
+  } else if (state.activeTab === "history") {
+    title = "Tu historial esta vacio";
+    message = "Las grabaciones que reproduzcas apareceran aqui.";
+  }
+
+  els.contentState.innerHTML = "";
+  const wrapper = document.createElement("div");
+  const strong = document.createElement("strong");
+  const text = document.createElement("span");
+  strong.textContent = title;
+  text.textContent = message;
+  wrapper.append(strong, text);
+  els.contentState.append(wrapper);
+  els.contentState.classList.remove("hidden");
+}
+
+function createLibraryItem(item, queue) {
+  const fragment = els.template.content.cloneNode(true);
+  const article = fragment.querySelector(".library-item");
+  const main = fragment.querySelector(".item-main");
+  const icon = fragment.querySelector(".item-icon");
+  const title = fragment.querySelector(".item-title");
+  const meta = fragment.querySelector(".item-meta");
+  const trailing = fragment.querySelector(".item-trailing");
+  const actions = fragment.querySelector(".item-actions");
+  const kind = item.type === "folder" ? "folder" : mediaKind(item);
+
+  article.dataset.kind = kind;
+  title.textContent = item.name;
+  icon.textContent = kind === "folder" ? "▰" : kind === "video" ? "▶" : kind === "audio" ? "♪" : "▤";
+
+  if (kind === "folder") {
+    const childCount = item.children?.length || 0;
+    meta.textContent = item.loaded === true ? formatCount(childCount) : childCount ? `${formatCount(childCount)} · catalogo en linea` : "Catalogo en linea";
+    main.setAttribute("aria-label", `Abrir ${item.name}`);
+    main.addEventListener("click", () => openFolder(item));
+  } else {
+    meta.textContent = [kind === "video" ? "Video" : kind === "audio" ? "Audio" : "Documento", item.size].filter(Boolean).join(" · ");
+    trailing.textContent = kind === "document" ? "↗" : "▶";
+    main.setAttribute("aria-label", `${kind === "document" ? "Abrir" : "Reproducir"} ${item.name}`);
+    main.addEventListener("click", () => {
+      if (kind === "document") {
+        window.open(item.url, "_blank", "noopener,noreferrer");
+        return;
+      }
+      playItem(item, queue);
+    });
+    actions.append(createFavoriteButton(item));
+    actions.append(createDownloadButton(item));
+  }
+
+  return fragment;
+}
+
+function createFavoriteButton(item) {
+  const button = document.createElement("button");
+  const favorite = isFavorite(item);
+  button.type = "button";
+  button.className = `icon-button item-action${favorite ? " is-favorite" : ""}`;
+  button.innerHTML = `<span aria-hidden="true">${favorite ? "♥" : "♡"}</span>`;
+  button.setAttribute("aria-label", favorite ? "Quitar de favoritos" : "Anadir a favoritos");
+  button.title = favorite ? "Quitar de favoritos" : "Favorito";
+  button.addEventListener("click", () => toggleFavorite(item));
+  return button;
+}
+
+function createDownloadButton(item) {
+  const link = document.createElement("a");
+  link.className = "icon-button item-action";
+  link.href = item.url;
+  link.download = item.name;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.innerHTML = '<span aria-hidden="true">⇩</span>';
+  link.setAttribute("aria-label", `Descargar ${item.name}`);
+  link.title = "Descargar";
+  link.addEventListener("click", (event) => event.stopPropagation());
+  return link;
+}
+
+async function openFolder(item) {
+  state.path = [...(item._parents || []), item];
+  state.activeTab = "browse";
+  state.query = "";
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === "browse");
+  });
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (item.loaded === true || item.loading) return;
+  item.loading = true;
+  showFolderLoading(item);
+  try {
+    const parents = [...(item._parents || []).map((folder) => folder.name), item.name];
+    const endpoint = new URL("/api/folder", location.origin);
+    endpoint.searchParams.set("id", item.id);
+    endpoint.searchParams.set("parents", JSON.stringify(parents));
+    const response = await fetch(endpoint, { cache: "no-cache" });
+    if (!response.ok) throw new Error(`Folder request failed: ${response.status}`);
+    const payload = await response.json();
+    if (!Array.isArray(payload.children)) throw new Error("Invalid folder response");
+    item.children = payload.children;
+    item.loaded = true;
+    item.loadError = false;
+    flattenCatalog(item.children, [...(item._parents || []), item]);
+  } catch {
+    item.loadError = true;
+  } finally {
+    item.loading = false;
+    if (state.path.at(-1) === item) {
+      render();
+      if (item.loadError && !(item.children?.length)) showFolderError(item);
+    }
+  }
+}
+
+function showFolderLoading(item) {
+  els.list.replaceChildren();
+  els.contentState.innerHTML = "";
+  const wrapper = document.createElement("div");
+  const strong = document.createElement("strong");
+  const text = document.createElement("span");
+  strong.textContent = item.name;
+  text.textContent = "Actualizando esta carpeta...";
+  wrapper.append(strong, text);
+  els.contentState.append(wrapper);
+  els.contentState.classList.remove("hidden");
+}
+
+function showFolderError(item) {
+  els.list.replaceChildren();
+  els.contentState.innerHTML = "";
+  const wrapper = document.createElement("div");
+  const strong = document.createElement("strong");
+  const text = document.createElement("span");
+  const retry = document.createElement("button");
+  strong.textContent = "No se pudo actualizar la carpeta";
+  text.textContent = "El catalogo remoto no respondio.";
+  retry.type = "button";
+  retry.className = "text-action retry-action";
+  retry.textContent = "Reintentar";
+  retry.addEventListener("click", () => {
+    item.loadError = false;
+    openFolder(item);
+  });
+  wrapper.append(strong, text, retry);
+  els.contentState.append(wrapper);
+  els.contentState.classList.remove("hidden");
+}
+
+function goBack() {
+  if (state.query) {
+    state.query = "";
+    els.searchInput.value = "";
+    els.searchClear.classList.add("hidden");
+  } else if (state.activeTab !== "browse") {
+    state.activeTab = "browse";
+  } else if (state.path.length) {
+    state.path.pop();
+  }
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === state.activeTab);
+  });
+  render();
+}
+
+function isFavorite(item) {
+  return state.favorites.some((favorite) => favorite.id === item.id || favorite.url === item.url);
+}
+
+function toggleFavorite(item) {
+  const index = state.favorites.findIndex((favorite) => favorite.id === item.id || favorite.url === item.url);
+  if (index >= 0) {
+    state.favorites.splice(index, 1);
+  } else {
+    state.favorites.unshift(fileSnapshot(item));
+  }
+  saveStorage(STORAGE_KEYS.favorites, state.favorites);
+  updatePlayerFavorite();
+  render();
+}
+
+function activeMedia() {
+  if (!state.current) return null;
+  if (mediaKind(state.current) === "video" && !state.audioMode) return els.video;
+  return els.audio;
+}
+
+function inactiveMedia() {
+  const active = activeMedia();
+  return active === els.video ? els.audio : els.video;
+}
+
+function playItem(item, queue = []) {
+  const snapshot = fileSnapshot(item);
+  const changed = state.current?.url !== snapshot.url;
+  state.current = snapshot;
+  state.queue = queue.length ? queue.map(fileSnapshot) : [snapshot];
+  const kind = mediaKind(snapshot);
+
+  if (changed) {
+    els.video.pause();
+    els.audio.pause();
+    els.video.removeAttribute("src");
+    els.audio.removeAttribute("src");
+    const media = activeMedia();
+    media.src = snapshot.url;
+    media.load();
+    restorePosition(media, snapshot);
+  }
+
+  els.body.classList.add("has-media");
+  els.playerPane.classList.remove("player-empty");
+  els.playerPlaceholder.classList.add("hidden");
+  els.miniPlayer.classList.remove("hidden");
+  els.nowLabel.textContent = kind === "video" ? (state.audioMode ? "Video · modo audio" : "Video") : "Audio";
+  els.nowTitle.textContent = snapshot.name;
+  els.nowPath.textContent = snapshot.path || "Sant Mat Castellano";
+  els.miniTitle.textContent = snapshot.name;
+  els.audioMode.checked = kind === "audio" ? true : state.audioMode;
+  els.audioMode.disabled = kind !== "video";
+  els.downloadCurrent.href = snapshot.url;
+  els.downloadCurrent.download = snapshot.name;
+  els.downloadCurrent.classList.remove("disabled");
+  els.downloadCurrent.setAttribute("aria-disabled", "false");
+  [els.playerFavorite, els.playButton, els.previousButton, els.nextButton, els.seekBack, els.seekForward].forEach((control) => {
+    control.disabled = false;
+  });
+
+  updateMediaVisibility();
+  updatePlayerFavorite();
+  updateMediaSession();
+  addToHistory(snapshot, 0);
+  render();
+
+  activeMedia().play().catch(() => updatePlaybackControls());
+}
+
+function restorePosition(media, item) {
+  const previous = state.history.find((entry) => entry.url === item.url);
+  if (!previous?.position) return;
+  media.addEventListener("loadedmetadata", () => {
+    if (Number.isFinite(media.duration) && previous.position < media.duration - 15) {
+      media.currentTime = previous.position;
+    }
+  }, { once: true });
+}
+
+function updateMediaVisibility() {
+  if (!state.current) return;
+  const kind = mediaKind(state.current);
+  const showVideo = kind === "video" && !state.audioMode;
+  els.video.classList.toggle("hidden", !showVideo);
+  els.audio.classList.toggle("hidden", showVideo);
+  els.playerArtwork.classList.toggle("hidden", showVideo);
+}
+
+function switchAudioMode(enabled) {
+  if (!state.current || mediaKind(state.current) !== "video") return;
+  const oldMedia = activeMedia();
+  const time = Number.isFinite(oldMedia.currentTime) ? oldMedia.currentTime : 0;
+  const shouldResume = !oldMedia.paused;
+  oldMedia.pause();
+  state.audioMode = enabled;
+  localStorage.setItem(STORAGE_KEYS.audioMode, String(enabled));
+  const nextMedia = activeMedia();
+
+  if (nextMedia.src !== state.current.url) {
+    nextMedia.src = state.current.url;
+    nextMedia.load();
+  }
+  nextMedia.addEventListener("loadedmetadata", () => {
+    if (Number.isFinite(nextMedia.duration)) nextMedia.currentTime = Math.min(time, nextMedia.duration || time);
+    if (shouldResume) nextMedia.play().catch(() => updatePlaybackControls());
+  }, { once: true });
+
+  els.nowLabel.textContent = enabled ? "Video · modo audio" : "Video";
+  updateMediaVisibility();
+  updateMediaSession();
+  updatePlaybackControls();
+}
+
+function togglePlayback() {
+  const media = activeMedia();
+  if (!media) return;
+  if (media.paused) media.play().catch(() => updatePlaybackControls());
+  else media.pause();
+}
+
+function seekBy(seconds) {
+  const media = activeMedia();
+  if (!media) return;
+  const duration = Number.isFinite(media.duration) ? media.duration : Infinity;
+  media.currentTime = Math.max(0, Math.min(duration, media.currentTime + seconds));
+  updatePositionState();
+}
+
+function skip(direction) {
+  if (!state.current || !state.queue.length) return;
+  const index = state.queue.findIndex((item) => item.url === state.current.url);
+  const nextIndex = (index + direction + state.queue.length) % state.queue.length;
+  playItem(state.queue[nextIndex], state.queue);
+}
+
+function updatePlaybackControls() {
+  const media = activeMedia();
+  const playing = media && !media.paused;
+  const icon = playing ? "❚❚" : "▶";
+  els.playButton.querySelector("span").textContent = icon;
+  els.playButton.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+  els.miniPlay.querySelector("span").textContent = icon;
+  els.miniPlay.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+  els.miniStatus.textContent = playing ? (state.audioMode ? "Reproduciendo en modo audio" : "Reproduciendo") : "Pausado";
+  if ("mediaSession" in navigator) navigator.mediaSession.playbackState = playing ? "playing" : "paused";
+}
+
+function updatePlayerFavorite() {
+  if (!state.current) return;
+  const favorite = isFavorite(state.current);
+  els.playerFavorite.classList.toggle("is-favorite", favorite);
+  els.playerFavorite.querySelector("span").textContent = favorite ? "♥" : "♡";
+  els.playerFavorite.setAttribute("aria-label", favorite ? "Quitar de favoritos" : "Anadir a favoritos");
+}
+
+function addToHistory(item, position) {
+  const existing = state.history.find((entry) => entry.url === item.url);
+  const entry = {
+    ...fileSnapshot(item),
+    position: Math.max(0, Math.floor(position || existing?.position || 0)),
+    playedAt: Date.now()
+  };
+  state.history = [entry, ...state.history.filter((historyItem) => historyItem.url !== entry.url)].slice(0, 60);
+  saveStorage(STORAGE_KEYS.history, state.history);
+}
+
+function saveCurrentProgress() {
+  const media = activeMedia();
+  if (!state.current || !media || !Number.isFinite(media.currentTime)) return;
+  addToHistory(state.current, media.currentTime);
+}
+
+function scheduleProgressSave() {
+  clearTimeout(state.historyTimer);
+  state.historyTimer = setTimeout(saveCurrentProgress, 900);
+}
+
+function updateMediaSession() {
+  if (!("mediaSession" in navigator) || !state.current) return;
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: state.current.name,
+    artist: "Sant Mat Castellano",
+    album: state.current.path || "Media Seva",
+    artwork: [
+      { src: new URL("/icon-192.png", location.href).href, sizes: "192x192", type: "image/png" },
+      { src: new URL("/icon-512.png", location.href).href, sizes: "512x512", type: "image/png" }
+    ]
+  });
+  updatePositionState();
+}
+
+function updatePositionState() {
+  if (!("mediaSession" in navigator) || !("setPositionState" in navigator.mediaSession)) return;
+  const media = activeMedia();
+  if (!media || !Number.isFinite(media.duration) || media.duration <= 0) return;
+  try {
+    navigator.mediaSession.setPositionState({
+      duration: media.duration,
+      playbackRate: media.playbackRate,
+      position: Math.min(media.currentTime, media.duration)
+    });
+  } catch {
+    // Some mobile browsers expose Media Session before position updates are ready.
+  }
+}
+
+function configureMediaSessionHandlers() {
+  if (!("mediaSession" in navigator)) return;
+  const handlers = {
+    play: () => activeMedia()?.play(),
+    pause: () => activeMedia()?.pause(),
+    seekbackward: (details) => seekBy(-(details.seekOffset || 10)),
+    seekforward: (details) => seekBy(details.seekOffset || 10),
+    seekto: (details) => {
+      const media = activeMedia();
+      if (!media || typeof details.seekTime !== "number") return;
+      media.currentTime = details.seekTime;
+      updatePositionState();
+    },
+    previoustrack: () => skip(-1),
+    nexttrack: () => skip(1)
+  };
+  for (const [action, handler] of Object.entries(handlers)) {
+    try {
+      navigator.mediaSession.setActionHandler(action, handler);
+    } catch {
+      // Unsupported actions are ignored while the remaining controls still work.
+    }
+  }
+}
+
+function attachMediaEvents(media) {
+  media.addEventListener("play", updatePlaybackControls);
+  media.addEventListener("pause", () => {
+    updatePlaybackControls();
+    saveCurrentProgress();
+  });
+  media.addEventListener("ended", () => {
+    saveCurrentProgress();
+    skip(1);
+  });
+  media.addEventListener("timeupdate", () => {
+    updatePositionState();
+    scheduleProgressSave();
+  });
+  media.addEventListener("loadedmetadata", updatePositionState);
+}
+
+function handleSearch() {
+  state.query = els.searchInput.value.trim();
+  els.searchClear.classList.toggle("hidden", !state.query);
+  render();
+}
+
+function clearSearch() {
+  els.searchInput.value = "";
+  state.query = "";
+  els.searchClear.classList.add("hidden");
+  els.searchInput.focus();
+  render();
+}
+
+function openPlayerMobile() {
+  els.playerPane.classList.add("mobile-open");
+  document.querySelectorAll(".mobile-nav-item").forEach((button) => button.classList.remove("active"));
+  els.mobilePlayerTab.classList.add("active");
+}
+
+function bindEvents() {
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.addEventListener("click", () => setView(button.dataset.tab));
+  });
+  els.backButton.addEventListener("click", goBack);
+  els.searchToggle.addEventListener("click", () => {
+    els.searchPanel.classList.toggle("hidden");
+    if (!els.searchPanel.classList.contains("hidden")) els.searchInput.focus();
+  });
+  els.searchInput.addEventListener("input", handleSearch);
+  els.searchClear.addEventListener("click", clearSearch);
+  els.playerFavorite.addEventListener("click", () => state.current && toggleFavorite(state.current));
+  els.playButton.addEventListener("click", togglePlayback);
+  els.miniPlay.addEventListener("click", togglePlayback);
+  els.previousButton.addEventListener("click", () => skip(-1));
+  els.nextButton.addEventListener("click", () => skip(1));
+  els.seekBack.addEventListener("click", () => seekBy(-10));
+  els.seekForward.addEventListener("click", () => seekBy(10));
+  els.audioMode.addEventListener("change", () => switchAudioMode(els.audioMode.checked));
+  els.miniOpen.addEventListener("click", openPlayerMobile);
+  els.mobilePlayerTab.addEventListener("click", openPlayerMobile);
+  window.addEventListener("beforeunload", saveCurrentProgress);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") saveCurrentProgress();
+  });
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    state.installPrompt = event;
+    els.installButton.classList.remove("hidden");
+  });
+  els.installButton.addEventListener("click", async () => {
+    if (!state.installPrompt) return;
+    state.installPrompt.prompt();
+    await state.installPrompt.userChoice;
+    state.installPrompt = null;
+    els.installButton.classList.add("hidden");
+  });
+
+  attachMediaEvents(els.video);
+  attachMediaEvents(els.audio);
+  configureMediaSessionHandlers();
+}
+
+async function loadCatalog() {
+  els.contentState.innerHTML = "<div><strong>Cargando catalogo</strong><span>Preparando la biblioteca...</span></div>";
+  els.contentState.classList.remove("hidden");
+  try {
+    const response = await fetch("/catalog.json", { cache: "no-cache" });
+    if (!response.ok) throw new Error(`Catalog request failed: ${response.status}`);
+    state.catalog = await response.json();
+    flattenCatalog(state.catalog.items);
+    render();
+  } catch {
+    els.contentState.innerHTML = "<div><strong>No se pudo abrir el catalogo</strong><span>Comprueba tu conexion y vuelve a intentarlo.</span></div>";
+    els.contentState.classList.remove("hidden");
+  }
+}
+
+bindEvents();
+loadCatalog();
+
+if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+}
