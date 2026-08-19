@@ -50,9 +50,7 @@ for (const file of files) {
 const worker = String.raw`const ASSETS = new Map(${JSON.stringify(assets)});
 const CATALOG_BASE = "https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/";
 const FILE_TYPES = new Map([
-  [".mp4", "video"], [".m4v", "video"], [".mov", "video"], [".webm", "video"], [".mpg", "video"], [".mpeg", "video"],
-  [".mp3", "audio"], [".m4a", "audio"], [".aac", "audio"], [".wav", "audio"], [".ogg", "audio"], [".flac", "audio"], [".wma", "audio"],
-  [".pdf", "document"], [".epub", "document"], [".doc", "document"], [".docx", "document"], [".txt", "document"]
+  [".mp4", "video"], [".m4v", "video"], [".mov", "video"], [".webm", "video"], [".mpg", "video"], [".mpeg", "video"]
 ]);
 
 function decodeBase64(value) {

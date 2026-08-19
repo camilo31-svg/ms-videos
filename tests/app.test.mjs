@@ -4,10 +4,10 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 
-test("catalog contains the repository sections and playable media", async () => {
+test("catalog contains only video sections and playable videos", async () => {
   const catalog = JSON.parse(await readFile(new URL("public/catalog.json", root), "utf8"));
-  assert.equal(catalog.title, "Sant Mat Castellano");
-  assert.ok(catalog.items.length >= 4);
+  assert.equal(catalog.title, "MS Videos");
+  assert.ok(catalog.items.length >= 1);
   const stack = [...catalog.items];
   const names = [];
   let playable = 0;
@@ -15,10 +15,11 @@ test("catalog contains the repository sections and playable media", async () => 
     const item = stack.pop();
     names.push(item.name);
     if (item.type === "folder") stack.push(...(item.children || []));
-    if (item.type === "audio" || item.type === "video") playable += 1;
+    if (item.type === "video") playable += 1;
+    assert.ok(item.type === "folder" || item.type === "video");
   }
-  assert.ok(names.includes("Audio"));
-  assert.ok(names.includes("Videos"));
+  assert.ok(!names.includes("Audio"));
+  assert.ok(!names.includes("Libros y Revistas"));
   assert.ok(playable > 0);
 });
 
@@ -31,6 +32,9 @@ test("app includes local library and lock-screen media support", async () => {
   assert.match(html, /audio-mode-toggle/);
   assert.match(html, /data-tab="favorites"/);
   assert.match(html, /data-tab="history"/);
+  assert.match(html, /MS Videos/);
+  assert.match(app, /createYearSection/);
+  assert.match(app, /year-card/);
 });
 
 test("worker resolves a remote folder into nested folders and media", async () => {
@@ -40,6 +44,8 @@ test("worker resolves a remote folder into nested folders and media", async () =
     <a href="javascript:p06(null,2,'I2SXE777')">2024</a>
     <a href="Videos/Test/Grabacion%20especial.mp4">Grabacion especial.mp4</a>
     <span>128.5 MB</span>
+    <a href="Videos/Test/Audio.mp3">Audio.mp3</a>
+    <a href="Videos/Test/Notas.pdf">Notas.pdf</a>
   `, { status: 200, headers: { "content-type": "text/html" } });
   try {
     const response = await worker.fetch(new Request("https://player.test/api/folder?id=I1SXE97&parents=%5B%22Videos%22%2C%22Sadhu%20Ram%20Ji%22%5D"));
@@ -49,6 +55,7 @@ test("worker resolves a remote folder into nested folders and media", async () =
     assert.equal(payload.children[0].type, "folder");
     assert.equal(payload.children[1].type, "video");
     assert.match(payload.children[1].url, /Grabacion%20especial\.mp4$/);
+    assert.equal(payload.children.length, 2);
   } finally {
     globalThis.fetch = originalFetch;
   }

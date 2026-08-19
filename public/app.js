@@ -12,8 +12,8 @@ const state = {
   current: null,
   queue: [],
   audioMode: localStorage.getItem(STORAGE_KEYS.audioMode) === "true",
-  favorites: readStorage(STORAGE_KEYS.favorites, []),
-  history: readStorage(STORAGE_KEYS.history, []),
+  favorites: readStorage(STORAGE_KEYS.favorites, []).filter((item) => mediaKind(item) === "video"),
+  history: readStorage(STORAGE_KEYS.history, []).filter((item) => mediaKind(item) === "video"),
   installPrompt: null,
   historyTimer: null
 };
@@ -79,8 +79,7 @@ function mediaKind(item) {
 }
 
 function isPlayable(item) {
-  const kind = mediaKind(item);
-  return kind === "audio" || kind === "video";
+  return mediaKind(item) === "video";
 }
 
 function normalize(value) {
@@ -91,7 +90,29 @@ function normalize(value) {
 }
 
 function formatCount(count) {
-  return `${count} ${count === 1 ? "elemento" : "elementos"}`;
+  return `${count} ${count === 1 ? "opcion" : "opciones"}`;
+}
+
+function videoOnly(items) {
+  return (items || []).flatMap((item) => {
+    if (item.type === "video") return [item];
+    if (item.type !== "folder") return [];
+    return [{ ...item, children: videoOnly(item.children) }];
+  });
+}
+
+function prepareVideoCatalog(catalog) {
+  const rootItems = Array.isArray(catalog?.items) ? catalog.items : [];
+  const videosRoot = rootItems.find((item) => item.id === "I0SXE91" || normalize(item.name) === "videos");
+  return {
+    ...catalog,
+    title: "Videos",
+    items: videoOnly(videosRoot ? videosRoot.children : rootItems)
+  };
+}
+
+function itemYear(item) {
+  return item.type === "folder" ? item.name.match(/\b(?:19|20)\d{2}\b/)?.[0] || "" : "";
 }
 
 function currentFolder() {
@@ -168,8 +189,8 @@ function visibleHeading(items) {
     return { title: "Historial", crumb: "Escuchado recientemente", canGoBack: true };
   }
   return {
-    title: state.path.at(-1)?.name || state.catalog?.title || "Catalogo",
-    crumb: state.path.length ? ["Catalogo", ...state.path.slice(0, -1).map((node) => node.name)].join(" / ") : "Biblioteca",
+    title: state.path.at(-1)?.name || state.catalog?.title || "Videos",
+    crumb: state.path.length ? ["Videos", ...state.path.slice(0, -1).map((node) => node.name)].join(" / ") : "MS Videos",
     canGoBack: state.path.length > 0
   };
 }
@@ -192,24 +213,68 @@ function render() {
     return;
   }
 
+  const yearFolders = state.activeTab === "browse" && !state.query
+    ? items.filter((item) => itemYear(item)).sort((left, right) => Number(itemYear(right)) - Number(itemYear(left)))
+    : [];
+  const regularItems = yearFolders.length ? items.filter((item) => !itemYear(item)) : items;
   const queue = items.filter(isPlayable);
-  for (const item of items) {
+  if (yearFolders.length) els.list.append(createYearSection(yearFolders));
+  for (const item of regularItems) {
     els.list.append(createLibraryItem(item, queue));
   }
 }
 
+function createYearSection(items) {
+  const section = document.createElement("section");
+  const heading = document.createElement("div");
+  const title = document.createElement("h2");
+  const hint = document.createElement("p");
+  const grid = document.createElement("div");
+  section.className = "year-section";
+  heading.className = "year-heading";
+  grid.className = "year-grid";
+  title.textContent = "Elige un año";
+  hint.textContent = "Archivo de videos por fecha";
+  heading.append(title, hint);
+
+  for (const item of items) {
+    const button = document.createElement("button");
+    const year = document.createElement("strong");
+    const label = document.createElement("span");
+    const name = document.createElement("span");
+    const arrow = document.createElement("span");
+    button.type = "button";
+    button.className = "year-card";
+    button.setAttribute("aria-label", `Abrir videos de ${itemYear(item)}`);
+    year.className = "year-number";
+    year.textContent = itemYear(item);
+    label.className = "year-label";
+    name.textContent = item.name.replace(itemYear(item), "").replace(/[_-]+/g, " ").trim() || "Videos del año";
+    arrow.className = "year-arrow";
+    arrow.setAttribute("aria-hidden", "true");
+    arrow.textContent = "›";
+    label.append(name, arrow);
+    button.append(year, label);
+    button.addEventListener("click", () => openFolder(item));
+    grid.append(button);
+  }
+
+  section.append(heading, grid);
+  return section;
+}
+
 function renderEmptyState() {
-  let title = "No hay elementos aqui";
-  let message = "Vuelve a la biblioteca para seguir explorando.";
+  let title = "No hay videos aqui";
+  let message = "Vuelve a la videoteca para seguir explorando.";
   if (state.query) {
     title = "Sin resultados";
-    message = "Prueba con otro nombre, ano o tema.";
+    message = "Prueba con otro nombre, año o tema.";
   } else if (state.activeTab === "favorites") {
     title = "Todavia no tienes favoritos";
-    message = "Marca el corazon de una grabacion para guardarla aqui.";
+    message = "Tus videos guardados apareceran aqui.";
   } else if (state.activeTab === "history") {
     title = "Tu historial esta vacio";
-    message = "Las grabaciones que reproduzcas apareceran aqui.";
+    message = "Los videos que reproduzcas apareceran aqui.";
   }
 
   els.contentState.innerHTML = "";
@@ -240,7 +305,7 @@ function createLibraryItem(item, queue) {
 
   if (kind === "folder") {
     const childCount = item.children?.length || 0;
-    meta.textContent = item.loaded === true ? formatCount(childCount) : childCount ? `${formatCount(childCount)} · catalogo en linea` : "Catalogo en linea";
+    meta.textContent = item.loaded === true ? formatCount(childCount) : childCount ? `${formatCount(childCount)} · videos en linea` : "Videos en linea";
     main.setAttribute("aria-label", `Abrir ${item.name}`);
     main.addEventListener("click", () => openFolder(item));
   } else {
@@ -309,7 +374,7 @@ async function openFolder(item) {
     if (!response.ok) throw new Error(`Folder request failed: ${response.status}`);
     const payload = await response.json();
     if (!Array.isArray(payload.children)) throw new Error("Invalid folder response");
-    item.children = payload.children;
+    item.children = videoOnly(payload.children);
     item.loaded = true;
     item.loadError = false;
     flattenCatalog(item.children, [...(item._parents || []), item]);
@@ -345,7 +410,7 @@ function showFolderError(item) {
   const text = document.createElement("span");
   const retry = document.createElement("button");
   strong.textContent = "No se pudo actualizar la carpeta";
-  text.textContent = "El catalogo remoto no respondio.";
+  text.textContent = "La videoteca remota no respondio.";
   retry.type = "button";
   retry.className = "text-action retry-action";
   retry.textContent = "Reintentar";
@@ -559,7 +624,7 @@ function updateMediaSession() {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: state.current.name,
     artist: "Sant Mat Castellano",
-    album: state.current.path || "Media Seva",
+    album: state.current.path || "MS Videos",
     artwork: [
       { src: new URL("/icon-192.png", location.href).href, sizes: "192x192", type: "image/png" },
       { src: new URL("/icon-512.png", location.href).href, sizes: "512x512", type: "image/png" }
@@ -690,16 +755,16 @@ function bindEvents() {
 }
 
 async function loadCatalog() {
-  els.contentState.innerHTML = "<div><strong>Cargando catalogo</strong><span>Preparando la biblioteca...</span></div>";
+  els.contentState.innerHTML = "<div><strong>Cargando videos</strong><span>Preparando la videoteca...</span></div>";
   els.contentState.classList.remove("hidden");
   try {
     const response = await fetch("/catalog.json", { cache: "no-cache" });
     if (!response.ok) throw new Error(`Catalog request failed: ${response.status}`);
-    state.catalog = await response.json();
+    state.catalog = prepareVideoCatalog(await response.json());
     flattenCatalog(state.catalog.items);
     render();
   } catch {
-    els.contentState.innerHTML = "<div><strong>No se pudo abrir el catalogo</strong><span>Comprueba tu conexion y vuelve a intentarlo.</span></div>";
+    els.contentState.innerHTML = "<div><strong>No se pudo abrir la videoteca</strong><span>Comprueba tu conexion y vuelve a intentarlo.</span></div>";
     els.contentState.classList.remove("hidden");
   }
 }

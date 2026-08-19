@@ -71,9 +71,7 @@ function Get-FileEntries {
     [string[]]$Parents
   )
   $supported = @{
-    ".mp4" = "video"; ".m4v" = "video"; ".mov" = "video"; ".webm" = "video"; ".mpg" = "video"; ".mpeg" = "video";
-    ".mp3" = "audio"; ".m4a" = "audio"; ".aac" = "audio"; ".wav" = "audio"; ".ogg" = "audio"; ".flac" = "audio"; ".wma" = "audio";
-    ".pdf" = "document"; ".epub" = "document"; ".doc" = "document"; ".docx" = "document"; ".txt" = "document"
+    ".mp4" = "video"; ".m4v" = "video"; ".mov" = "video"; ".webm" = "video"; ".mpg" = "video"; ".mpeg" = "video"
   }
   $entries = @()
   $links = [regex]::Matches($Html, '(?is)<a\b(?<attrs>[^>]*)href\s*=\s*[''"](?<href>[^''"]+)[''"](?<rest>[^>]*)>(?<body>.*?)</a>')
@@ -138,19 +136,16 @@ function Get-FolderNode {
   }
 }
 
-$rootHtml = Get-Page $rootUri
-$items = [System.Collections.Generic.List[object]]::new()
-foreach ($folder in (Get-FolderEntries $rootHtml)) {
-  $items.Add((Get-FolderNode -Id $folder.id -Name $folder.name -Parents @()))
-}
+$videos = Get-FolderNode -Id "I0SXE91" -Name "Videos" -Parents @()
+$items = @($videos.children)
 
 $catalog = [pscustomobject][ordered]@{
-  title = "Sant Mat Castellano"
+  title = "MS Videos"
   source = $rootUri.AbsoluteUri
   updatedAt = [DateTime]::UtcNow.ToString("o")
-  items = @($items)
+  items = $items
 }
 
 $resolvedOutput = Join-Path (Get-Location) $OutputPath
 $catalog | ConvertTo-Json -Depth 100 | Set-Content -LiteralPath $resolvedOutput -Encoding utf8
-Write-Host "Saved $($items.Count) catalog sections to $resolvedOutput"
+Write-Host "Saved $($items.Count) video sections to $resolvedOutput"

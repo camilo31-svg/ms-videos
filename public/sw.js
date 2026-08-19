@@ -1,4 +1,4 @@
-const CACHE_NAME = "media-seva-v1";
+const CACHE_NAME = "ms-videos-v2";
 const APP_SHELL = [
   "/",
   "/index.html",

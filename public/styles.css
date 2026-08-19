@@ -95,18 +95,12 @@ input:focus-visible {
 }
 
 .brand-mark {
-  display: grid;
   width: 44px;
   height: 44px;
   flex: 0 0 44px;
-  place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.26);
-  border-radius: 50%;
-  background: var(--gold);
-  color: #1b1b17;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 15px;
-  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  object-fit: cover;
 }
 
 .brand-name {
@@ -360,6 +354,101 @@ input:focus-visible {
 .library-list {
   display: grid;
   border-top: 1px solid var(--line);
+}
+
+.year-section {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--line);
+}
+
+.year-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.year-heading h2,
+.year-heading p {
+  margin: 0;
+}
+
+.year-heading h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.year-heading p {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.year-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+  gap: 10px;
+}
+
+.year-card {
+  display: grid;
+  min-width: 0;
+  min-height: 112px;
+  grid-template-rows: 1fr auto;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #c8d4cf;
+  border-radius: 8px;
+  background: #f2f7f5;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.year-card:hover {
+  border-color: var(--teal);
+  background: var(--teal-soft);
+  transform: translateY(-2px);
+}
+
+.year-number {
+  color: var(--teal);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.year-label {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.year-label span:first-child {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.year-arrow {
+  flex: 0 0 auto;
+  color: var(--teal);
+  font-size: 20px;
+}
+
+.library-list:has(.year-section:first-child) {
+  border-top: 0;
 }
 
 .library-item {
@@ -844,6 +933,10 @@ input:focus-visible {
     margin-bottom: 10px;
   }
 
+  .year-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .title-block h1 {
     font-size: 27px;
   }
@@ -997,6 +1090,30 @@ input:focus-visible {
 
   .library-item {
     min-height: 70px;
+  }
+
+  .year-section {
+    margin-bottom: 18px;
+    padding-bottom: 18px;
+  }
+
+  .year-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .year-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .year-card {
+    min-height: 104px;
+    padding: 14px;
+  }
+
+  .year-number {
+    font-size: 30px;
   }
 
   .item-main {

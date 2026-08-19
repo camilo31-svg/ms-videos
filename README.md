@@ -1,17 +1,18 @@
-# Media Seva Player
+# MS Videos
 
-Installable mobile-first player for the public Sant Mat Castellano catalog:
+Installable mobile-first player for the Videos section of the public Sant Mat Castellano catalog:
 
 https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/_%20Sant%20Mat%20Castellano.html
 
 ## Included
 
-- Nested catalog navigation with a back button and breadcrumb.
-- Live folder loading, so new years and recordings appear without rebuilding.
-- Foreground video and audio playback.
+- Video-only catalog with nested navigation, a back button, and breadcrumbs.
+- Visual year tiles for quick navigation.
+- Live folder loading, so new years and videos appear without rebuilding.
+- Foreground video playback.
 - Audio-only mode for more reliable playback while the screen is locked.
 - Media Session controls for play, pause, previous, next, and 10-second seeking.
-- Lock-screen title, path, and artwork on supported devices.
+- Lock-screen title, path, and MS Videos artwork on supported devices.
 - Device-local favorites, listening history, and resume position.
 - Direct download links where the repository permits downloads.
 - Installable PWA shell with offline access to the app and catalog seed.
