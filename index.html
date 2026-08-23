@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta id="theme-color" name="theme-color" content="#17211f">
+    <meta name="description" content="Explora y reproduce los videos de Sant Mat en castellano.">
+    <meta property="og:title" content="MS Videos">
+    <meta property="og:description" content="Videos de Sant Mat en castellano, organizados para navegar por maestro y año.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://camilo31-svg.github.io/ms-videos/og.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MS Videos">
+    <meta name="twitter:description" content="Videos de Sant Mat en castellano, organizados para navegar por maestro y año.">
+    <meta name="twitter:image" content="https://camilo31-svg.github.io/ms-videos/og.png">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <script>
+      (() => {
+        let theme;
+        try {
+          theme = localStorage.getItem("ms-videos-theme-v1");
+        } catch {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="./styles.css">
+    <title>MS Videos</title>
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="app-header">
+        <div class="brand-lockup">
+          <img class="brand-mark" src="./icon-192.png" alt="">
+          <div>
+            <p class="brand-name">MS Videos</p>
+            <p class="brand-section">Sant Mat Castellano</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="theme-toggle" class="icon-button" type="button" aria-label="Activar modo oscuro" title="Modo oscuro">
+            <span aria-hidden="true">&#9790;</span>
+          </button>
+          <button id="search-toggle" class="icon-button" type="button" aria-label="Buscar" title="Buscar">
+            <span aria-hidden="true">⌕</span>
+          </button>
+          <button id="install-button" class="icon-button hidden" type="button" aria-label="Instalar aplicacion" title="Instalar">
+            <span aria-hidden="true">⇩</span>
+          </button>
+        </div>
+      </header>
+
+      <div id="search-panel" class="search-panel hidden">
+        <label class="search-box" for="search-input">
+          <span aria-hidden="true">⌕</span>
+          <input id="search-input" type="search" placeholder="Buscar video, año o carpeta" autocomplete="off">
+          <button id="search-clear" class="clear-button hidden" type="button" aria-label="Limpiar busqueda">×</button>
+        </label>
+      </div>
+
+      <main class="main-layout">
+        <aside class="desktop-nav" aria-label="Biblioteca">
+          <nav class="nav-list">
+            <button class="nav-item active" type="button" data-tab="browse">
+              <span class="nav-icon" aria-hidden="true">⌂</span>
+              <span>Videos</span>
+            </button>
+            <button class="nav-item" type="button" data-tab="favorites">
+              <span class="nav-icon" aria-hidden="true">♡</span>
+              <span>Favoritos</span>
+              <span id="desktop-favorite-count" class="nav-count">0</span>
+            </button>
+            <button class="nav-item" type="button" data-tab="history">
+              <span class="nav-icon" aria-hidden="true">↺</span>
+              <span>Historial</span>
+            </button>
+          </nav>
+          <div class="catalog-source">
+            <span class="source-dot" aria-hidden="true"></span>
+            <span>Videoteca publica</span>
+          </div>
+        </aside>
+
+        <section class="library-pane" aria-live="polite">
+          <div class="library-toolbar">
+            <button id="back-button" class="icon-button back-button hidden" type="button" aria-label="Volver" title="Volver">
+              <span aria-hidden="true">←</span>
+            </button>
+            <div class="title-block">
+              <p id="breadcrumb" class="breadcrumb">MS Videos</p>
+              <h1 id="view-title">Videos</h1>
+            </div>
+            <span id="item-count" class="item-count"></span>
+          </div>
+
+          <div id="content-state" class="content-state hidden"></div>
+          <div id="library-list" class="library-list"></div>
+        </section>
+
+        <section id="player-pane" class="player-pane player-empty" aria-label="Reproductor">
+          <div class="player-visual">
+            <img id="player-artwork" src="./artwork.png" alt="MS Videos">
+            <video id="video-player" class="media-element hidden" controls playsinline preload="metadata"></video>
+            <audio id="audio-player" class="media-element audio-element hidden" controls preload="metadata"></audio>
+            <div id="player-placeholder" class="player-placeholder">
+              <span class="placeholder-mark" aria-hidden="true">▶</span>
+              <p>Selecciona un video</p>
+            </div>
+          </div>
+
+          <div class="player-details">
+            <div class="player-heading">
+              <div class="playing-copy">
+                <p id="now-playing-label" class="eyebrow">Reproductor</p>
+                <h2 id="now-playing-title">Nada en reproduccion</h2>
+                <p id="now-playing-path" class="now-playing-path">Elige un video de la biblioteca</p>
+              </div>
+              <button id="player-favorite" class="icon-button favorite-button" type="button" aria-label="Anadir a favoritos" title="Favorito" disabled>
+                <span aria-hidden="true">♡</span>
+              </button>
+            </div>
+
+            <div id="custom-controls" class="custom-controls" aria-label="Controles de reproduccion">
+              <button id="previous-button" class="icon-button control-button" type="button" aria-label="Anterior" title="Anterior" disabled>
+                <span aria-hidden="true">|◀</span>
+              </button>
+              <button id="seek-back-button" class="icon-button control-button" type="button" aria-label="Retroceder 10 segundos" title="Retroceder 10 s" disabled>
+                <span aria-hidden="true">↶</span>
+                <small>10</small>
+              </button>
+              <button id="play-button" class="play-button" type="button" aria-label="Reproducir" disabled>
+                <span aria-hidden="true">▶</span>
+              </button>
+              <button id="seek-forward-button" class="icon-button control-button" type="button" aria-label="Avanzar 10 segundos" title="Avanzar 10 s" disabled>
+                <span aria-hidden="true">↷</span>
+                <small>10</small>
+              </button>
+              <button id="next-button" class="icon-button control-button" type="button" aria-label="Siguiente" title="Siguiente" disabled>
+                <span aria-hidden="true">▶|</span>
+              </button>
+            </div>
+
+            <div class="player-options">
+              <label class="toggle-row" for="audio-mode-toggle">
+                <span>
+                  <strong>Modo audio</strong>
+                  <small>Para escuchar con la pantalla bloqueada</small>
+                </span>
+                <input id="audio-mode-toggle" type="checkbox" disabled>
+                <span class="toggle-track" aria-hidden="true"><span></span></span>
+              </label>
+              <a id="download-current" class="text-action disabled" href="#" download aria-disabled="true">
+                <span aria-hidden="true">⇩</span>
+                Descargar
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div id="mini-player" class="mini-player hidden">
+        <img id="mini-artwork" src="./artwork.png" alt="">
+        <button id="mini-open" class="mini-copy" type="button">
+          <strong id="mini-title">Nada en reproduccion</strong>
+          <span id="mini-status">Pausado</span>
+        </button>
+        <button id="mini-play" class="icon-button" type="button" aria-label="Reproducir">
+          <span aria-hidden="true">▶</span>
+        </button>
+      </div>
+
+      <nav class="mobile-nav" aria-label="Biblioteca">
+        <button class="mobile-nav-item active" type="button" data-tab="browse">
+          <span aria-hidden="true">⌂</span>
+          <small>Videos</small>
+        </button>
+        <button class="mobile-nav-item" type="button" data-tab="favorites">
+          <span aria-hidden="true">♡</span>
+          <small>Favoritos</small>
+        </button>
+        <button class="mobile-nav-item" type="button" data-tab="history">
+          <span aria-hidden="true">↺</span>
+          <small>Historial</small>
+        </button>
+        <button id="mobile-player-tab" class="mobile-nav-item" type="button">
+          <span aria-hidden="true">▶</span>
+          <small>Reproductor</small>
+        </button>
+      </nav>
+    </div>
+
+    <template id="library-item-template">
+      <article class="library-item">
+        <button class="item-main" type="button">
+          <span class="item-icon" aria-hidden="true"></span>
+          <span class="item-copy">
+            <strong class="item-title"></strong>
+            <small class="item-meta"></small>
+          </span>
+          <span class="item-trailing" aria-hidden="true">›</span>
+        </button>
+        <div class="item-actions"></div>
+      </article>
+    </template>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
