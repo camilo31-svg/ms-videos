@@ -678,7 +678,7 @@ function updateVideoPresentation() {
   els.miniArtwork.classList.toggle("hidden", showLiveMiniVideo);
 }
 
-function playItem(item, queue = []) {
+function playItem(item, queue = [], { openPlayer = true } = {}) {
   const snapshot = fileSnapshot(item);
   const changed = state.current?.url !== snapshot.url;
   state.current = snapshot;
@@ -714,6 +714,7 @@ function playItem(item, queue = []) {
     control.disabled = false;
   });
 
+  if (openPlayer && isMobileLayout()) openPlayerMobile();
   updateMediaVisibility();
   updatePlayerFavorite();
   updateMediaSession();
@@ -788,7 +789,8 @@ function skip(direction) {
   if (!state.current || !state.queue.length) return;
   const index = state.queue.findIndex((item) => item.url === state.current.url);
   const nextIndex = (index + direction + state.queue.length) % state.queue.length;
-  playItem(state.queue[nextIndex], state.queue);
+  const keepPlayerOpen = els.playerPane.classList.contains("mobile-open");
+  playItem(state.queue[nextIndex], state.queue, { openPlayer: keepPlayerOpen });
 }
 
 function updatePlaybackControls() {
