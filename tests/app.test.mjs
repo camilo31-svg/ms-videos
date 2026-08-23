@@ -51,7 +51,15 @@ test("mobile mini-player reuses the live video and shares playback state", async
   assert.match(app, /webkitSetPresentationMode/);
   assert.match(css, /grid-template-columns: 96px minmax\(0, 1fr\)/);
   const serviceWorker = await readFile(new URL("public/sw.js", root), "utf8");
-  assert.match(serviceWorker, /ms-videos-pages-v2/);
+  assert.match(serviceWorker, /ms-videos-pages-v3/);
+});
+
+test("selecting a video opens the mobile player until a library tab is chosen", async () => {
+  const app = await readFile(new URL("public/app.js", root), "utf8");
+  assert.match(app, /function playItem\(item, queue = \[\], \{ openPlayer = true \} = \{\}\)/);
+  assert.match(app, /if \(openPlayer && isMobileLayout\(\)\) openPlayerMobile\(\)/);
+  assert.match(app, /els\.playerPane\.classList\.remove\("mobile-open"\)/);
+  assert.match(app, /openPlayer: keepPlayerOpen/);
 });
 
 test("app supports system-aware light and dark themes with a saved preference", async () => {
