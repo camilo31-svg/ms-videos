@@ -10,7 +10,7 @@ Installable mobile-first player for three public Media Seva video collections:
 
 - Video-only catalog with nested navigation, a back button, and breadcrumbs.
 - Visual year tiles for quick navigation.
-- Live folder loading, so new years and videos appear without rebuilding.
+- Complete catalog snapshot for GitHub Pages, including all nested video folders.
 - One row per recording, with a quality chooser when low, DVD, HD, 4K, MP4, or AVI variants are available.
 - Foreground video playback.
 - Audio-only mode for more reliable playback while the screen is locked.
@@ -38,11 +38,13 @@ node scripts/build.mjs
 node --test tests/app.test.mjs
 ```
 
-To create a complete offline catalog snapshot instead of live folder loading:
+To refresh the complete catalog snapshot before publishing:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/crawl-catalog.ps1
+node scripts/crawl-catalog.mjs
 ```
+
+The static PWA is published from the contents of `public/` and uses relative paths so it works at `https://camilo31-svg.github.io/ms-videos/`.
 
 ## Native mobile path
 

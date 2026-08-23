@@ -483,7 +483,7 @@ async function openFolder(item) {
   showFolderLoading(item);
   try {
     const parents = [...(item._parents || []).map((folder) => folder.name), item.name];
-    const endpoint = new URL("/api/folder", location.origin);
+    const endpoint = new URL("api/folder", document.baseURI);
     endpoint.searchParams.set("source", item.source || "castellano");
     endpoint.searchParams.set("id", item.remoteId || item.id);
     endpoint.searchParams.set("name", item.name);
@@ -883,7 +883,7 @@ async function loadCatalog() {
   els.contentState.innerHTML = "<div><strong>Cargando videos</strong><span>Preparando la videoteca...</span></div>";
   els.contentState.classList.remove("hidden");
   try {
-    const response = await fetch("/catalog.json", { cache: "no-cache" });
+    const response = await fetch(new URL("catalog.json", document.baseURI), { cache: "no-cache" });
     if (!response.ok) throw new Error(`Catalog request failed: ${response.status}`);
     state.catalog = prepareVideoCatalog(await response.json());
     flattenCatalog(state.catalog.items);
@@ -898,5 +898,5 @@ bindEvents();
 loadCatalog();
 
 if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(() => {}));
+  window.addEventListener("load", () => navigator.serviceWorker.register(new URL("sw.js", document.baseURI)).catch(() => {}));
 }

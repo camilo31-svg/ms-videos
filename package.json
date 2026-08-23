@@ -7,7 +7,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "catalog": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/crawl-catalog.ps1",
+    "catalog": "node scripts/crawl-catalog.mjs",
     "dev": "node scripts/dev-server.mjs",
     "build": "node scripts/build.mjs",
     "test": "node scripts/build.mjs && node --test tests/app.test.mjs"

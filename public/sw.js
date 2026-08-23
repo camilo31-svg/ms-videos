@@ -1,14 +1,14 @@
-const CACHE_NAME = "ms-videos-v4";
+const CACHE_NAME = "ms-videos-pages-v1";
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/app.js",
-  "/catalog.json",
-  "/manifest.webmanifest",
-  "/artwork.png",
-  "/icon-192.png",
-  "/icon-512.png"
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./app.js",
+  "./catalog.json",
+  "./manifest.webmanifest",
+  "./artwork.png",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {

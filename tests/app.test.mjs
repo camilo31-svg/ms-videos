@@ -50,6 +50,20 @@ test("app supports system-aware light and dark themes with a saved preference", 
   assert.match(css, /color-scheme: dark/);
 });
 
+test("static PWA assets resolve below the GitHub Pages repository path", async () => {
+  const app = await readFile(new URL("public/app.js", root), "utf8");
+  const html = await readFile(new URL("public/index.html", root), "utf8");
+  const manifest = JSON.parse(await readFile(new URL("public/manifest.webmanifest", root), "utf8"));
+  const serviceWorker = await readFile(new URL("public/sw.js", root), "utf8");
+  assert.equal(manifest.start_url, "./");
+  assert.equal(manifest.scope, "./");
+  assert.match(html, /href="\.\/manifest\.webmanifest"/);
+  assert.match(html, /src="\.\/app\.js"/);
+  assert.match(app, /new URL\("catalog\.json", document\.baseURI\)/);
+  assert.match(app, /new URL\("sw\.js", document\.baseURI\)/);
+  assert.match(serviceWorker, /"\.\/catalog\.json"/);
+});
+
 test("worker collapses quality folders into one video with selectable variants", async () => {
   const { default: worker } = await import(new URL(`dist/server/index.js?test=${Date.now()}`, root));
   const originalFetch = globalThis.fetch;
@@ -115,10 +129,10 @@ test("worker keeps a single available quality directly playable", async () => {
   }
 });
 
-test("worker emits absolute social metadata for its current host", async () => {
+test("worker emits absolute GitHub Pages social metadata", async () => {
   const { default: worker } = await import(new URL(`dist/server/index.js?meta=${Date.now()}`, root));
   const response = await worker.fetch(new Request("https://media-seva.test/"));
   const html = await response.text();
-  assert.match(html, /https:\/\/media-seva\.test\/og\.png/);
+  assert.match(html, /https:\/\/camilo31-svg\.github\.io\/ms-videos\/og\.png/);
   assert.doesNotMatch(html, /__SITE_ORIGIN__/);
 });
