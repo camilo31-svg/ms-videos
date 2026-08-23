@@ -1,7 +1,8 @@
 const STORAGE_KEYS = {
   favorites: "media-seva-favorites-v1",
   history: "media-seva-history-v1",
-  audioMode: "media-seva-audio-mode-v1"
+  audioMode: "media-seva-audio-mode-v1",
+  theme: "ms-videos-theme-v1"
 };
 
 const state = {
@@ -31,6 +32,8 @@ const els = {
   searchPanel: document.querySelector("#search-panel"),
   searchInput: document.querySelector("#search-input"),
   searchClear: document.querySelector("#search-clear"),
+  themeToggle: document.querySelector("#theme-toggle"),
+  themeColor: document.querySelector("#theme-color"),
   installButton: document.querySelector("#install-button"),
   favoriteCount: document.querySelector("#desktop-favorite-count"),
   playerPane: document.querySelector("#player-pane"),
@@ -68,6 +71,33 @@ function readStorage(key, fallback) {
 
 function saveStorage(key, value) {
   localStorage.setItem(key, JSON.stringify(value));
+}
+
+function storedTheme() {
+  try {
+    const theme = localStorage.getItem(STORAGE_KEYS.theme);
+    return theme === "light" || theme === "dark" ? theme : "";
+  } catch {
+    return "";
+  }
+}
+
+function preferredTheme() {
+  return storedTheme() || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+}
+
+function applyTheme(theme, persist = false) {
+  const dark = theme === "dark";
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  els.themeToggle.querySelector("span").textContent = dark ? "\u2600" : "\u263E";
+  els.themeToggle.setAttribute("aria-label", dark ? "Activar modo claro" : "Activar modo oscuro");
+  els.themeToggle.title = dark ? "Modo claro" : "Modo oscuro";
+  els.themeColor.content = dark ? "#0b1110" : "#17211f";
+  if (persist) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.theme, dark ? "dark" : "light");
+    } catch {}
+  }
 }
 
 function mediaKind(item) {
@@ -127,14 +157,41 @@ function pathLabel(item) {
 }
 
 function fileSnapshot(item) {
+  const variants = (item.variants || []).map(({ url, size, quality, format, playable }) => ({
+    url,
+    size: size || "",
+    quality: quality || format || "Video",
+    format: format || "",
+    playable: playable !== false
+  }));
   return {
     id: item.id,
     type: mediaKind(item),
     name: item.name,
     url: item.url,
     size: item.size || "",
+    quality: item.quality || variants.find((variant) => variant.url === item.url)?.quality || "",
+    variants,
+    source: item.source || "",
     path: item.path || pathLabel(item)
   };
+}
+
+function withVariant(item, variant) {
+  return {
+    ...item,
+    url: variant.url,
+    size: variant.size || "",
+    quality: variant.quality || variant.format || "Video"
+  };
+}
+
+function variantDetails(variant) {
+  const format = variant.format || "";
+  const showFormat = format && !normalize(variant.quality).includes(normalize(format));
+  return [showFormat ? format : "", variant.size, variant.playable === false ? "Compatibilidad limitada" : ""]
+    .filter(Boolean)
+    .join(" · ");
 }
 
 function flattenCatalog(items, parents = [], output = []) {
@@ -249,7 +306,8 @@ function createYearSection(items) {
     year.className = "year-number";
     year.textContent = itemYear(item);
     label.className = "year-label";
-    name.textContent = item.name.replace(itemYear(item), "").replace(/[_-]+/g, " ").trim() || "Videos del año";
+    const remainder = item.name.replace(itemYear(item), "").replace(/[_-]+/g, " ").trim();
+    name.textContent = /^h$/i.test(remainder) ? "Colección H · castellano" : remainder || "Videos del año";
     arrow.className = "year-arrow";
     arrow.setAttribute("aria-hidden", "true");
     arrow.textContent = "›";
@@ -308,22 +366,80 @@ function createLibraryItem(item, queue) {
     meta.textContent = item.loaded === true ? formatCount(childCount) : childCount ? `${formatCount(childCount)} · videos en linea` : "Videos en linea";
     main.setAttribute("aria-label", `Abrir ${item.name}`);
     main.addEventListener("click", () => openFolder(item));
-  } else {
-    meta.textContent = [kind === "video" ? "Video" : kind === "audio" ? "Audio" : "Documento", item.size].filter(Boolean).join(" · ");
-    trailing.textContent = kind === "document" ? "↗" : "▶";
-    main.setAttribute("aria-label", `${kind === "document" ? "Abrir" : "Reproducir"} ${item.name}`);
+  } else if (kind === "video") {
+    const variants = item.variants?.length ? item.variants : [{
+      url: item.url,
+      size: item.size || "",
+      quality: item.quality || "Video",
+      format: item.name.split(".").pop()?.toUpperCase() || "",
+      playable: true
+    }];
+    meta.textContent = variants.length > 1
+      ? `${variants.length} calidades disponibles`
+      : [variants[0].quality, variantDetails(variants[0])].filter(Boolean).join(" · ");
+    trailing.textContent = variants.length > 1 ? "⌄" : "▶";
+    main.setAttribute("aria-label", variants.length > 1 ? `Elegir calidad para ${item.name}` : `Reproducir ${item.name}`);
+    main.setAttribute("aria-expanded", "false");
     main.addEventListener("click", () => {
-      if (kind === "document") {
-        window.open(item.url, "_blank", "noopener,noreferrer");
+      if (variants.length > 1) {
+        toggleQualityPanel(article, main, item, variants, queue);
         return;
       }
-      playItem(item, queue);
+      const selected = withVariant(item, variants[0]);
+      playItem(selected, queue.map((queued) => queued.id === item.id ? selected : queued));
     });
     actions.append(createFavoriteButton(item));
-    actions.append(createDownloadButton(item));
+    if (variants.length === 1) actions.append(createDownloadButton(withVariant(item, variants[0])));
   }
 
   return fragment;
+}
+
+function toggleQualityPanel(article, main, item, variants, queue) {
+  const existing = article.querySelector(".quality-panel");
+  document.querySelectorAll(".quality-panel").forEach((panel) => {
+    panel.closest(".library-item")?.querySelector(".item-main")?.setAttribute("aria-expanded", "false");
+    panel.remove();
+  });
+  if (existing) return;
+
+  const panel = document.createElement("div");
+  const label = document.createElement("p");
+  panel.className = "quality-panel";
+  label.className = "quality-heading";
+  label.textContent = "Calidad de reproducción";
+  panel.append(label);
+
+  for (const variant of variants) {
+    const row = document.createElement("div");
+    const play = document.createElement("button");
+    const marker = document.createElement("span");
+    const copy = document.createElement("span");
+    const quality = document.createElement("strong");
+    const detail = document.createElement("small");
+    const selected = withVariant(item, variant);
+    row.className = "quality-row";
+    play.type = "button";
+    play.className = "quality-option";
+    play.setAttribute("aria-label", `Reproducir ${item.name} en calidad ${variant.quality}`);
+    marker.className = "quality-play";
+    marker.setAttribute("aria-hidden", "true");
+    marker.textContent = "▶";
+    copy.className = "quality-copy";
+    quality.textContent = variant.quality || variant.format || "Video";
+    detail.textContent = variantDetails(variant);
+    copy.append(quality, detail);
+    play.append(marker, copy);
+    play.addEventListener("click", () => {
+      const selectedQueue = queue.map((queued) => queued.id === item.id ? selected : queued);
+      playItem(selected, selectedQueue);
+    });
+    row.append(play, createDownloadButton(selected));
+    panel.append(row);
+  }
+
+  article.append(panel);
+  main.setAttribute("aria-expanded", "true");
 }
 
 function createFavoriteButton(item) {
@@ -368,7 +484,9 @@ async function openFolder(item) {
   try {
     const parents = [...(item._parents || []).map((folder) => folder.name), item.name];
     const endpoint = new URL("/api/folder", location.origin);
-    endpoint.searchParams.set("id", item.id);
+    endpoint.searchParams.set("source", item.source || "castellano");
+    endpoint.searchParams.set("id", item.remoteId || item.id);
+    endpoint.searchParams.set("name", item.name);
     endpoint.searchParams.set("parents", JSON.stringify(parents));
     const response = await fetch(endpoint, { cache: "no-cache" });
     if (!response.ok) throw new Error(`Folder request failed: ${response.status}`);
@@ -488,7 +606,7 @@ function playItem(item, queue = []) {
   els.playerPane.classList.remove("player-empty");
   els.playerPlaceholder.classList.add("hidden");
   els.miniPlayer.classList.remove("hidden");
-  els.nowLabel.textContent = kind === "video" ? (state.audioMode ? "Video · modo audio" : "Video") : "Audio";
+  els.nowLabel.textContent = ["Video", snapshot.quality, state.audioMode ? "modo audio" : ""].filter(Boolean).join(" · ");
   els.nowTitle.textContent = snapshot.name;
   els.nowPath.textContent = snapshot.path || "Sant Mat Castellano";
   els.miniTitle.textContent = snapshot.name;
@@ -549,7 +667,7 @@ function switchAudioMode(enabled) {
     if (shouldResume) nextMedia.play().catch(() => updatePlaybackControls());
   }, { once: true });
 
-  els.nowLabel.textContent = enabled ? "Video · modo audio" : "Video";
+  els.nowLabel.textContent = ["Video", state.current.quality, enabled ? "modo audio" : ""].filter(Boolean).join(" · ");
   updateMediaVisibility();
   updateMediaSession();
   updatePlaybackControls();
@@ -711,6 +829,13 @@ function openPlayerMobile() {
 }
 
 function bindEvents() {
+  applyTheme(preferredTheme());
+  els.themeToggle.addEventListener("click", () => {
+    applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark", true);
+  });
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+    if (!storedTheme()) applyTheme(event.matches ? "dark" : "light");
+  });
   document.querySelectorAll("[data-tab]").forEach((button) => {
     button.addEventListener("click", () => setView(button.dataset.tab));
   });

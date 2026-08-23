@@ -1,8 +1,21 @@
 import { createServer } from "node:http";
+import { stat } from "node:fs/promises";
 
 await import("./build.mjs");
-const workerUrl = new URL(`../dist/server/index.js?dev=${Date.now()}`, import.meta.url);
-const { default: worker } = await import(workerUrl);
+const workerPath = new URL("../dist/server/index.js", import.meta.url);
+let worker;
+let workerVersion = 0;
+
+async function currentWorker() {
+  const version = (await stat(workerPath)).mtimeMs;
+  if (!worker || version !== workerVersion) {
+    worker = (await import(new URL(`../dist/server/index.js?dev=${version}`, import.meta.url))).default;
+    workerVersion = version;
+  }
+  return worker;
+}
+
+await currentWorker();
 
 const port = Number.parseInt(process.env.PORT || "4173", 10);
 const host = "127.0.0.1";
@@ -10,7 +23,8 @@ const host = "127.0.0.1";
 const server = createServer(async (request, response) => {
   try {
     const requestUrl = new URL(request.url || "/", `http://${request.headers.host || `${host}:${port}`}`);
-    const workerResponse = await worker.fetch(new Request(requestUrl, {
+    const activeWorker = await currentWorker();
+    const workerResponse = await activeWorker.fetch(new Request(requestUrl, {
       method: request.method,
       headers: request.headers
     }));

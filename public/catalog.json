@@ -1,70 +1,682 @@
 {
-  "title": "MS Videos",
-  "source": "https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/_%20Sant%20Mat%20Castellano.html",
-  "updatedAt": "2026-08-19T00:00:00.000Z",
-  "items": [
-    { "id": "I1SXE92", "type": "folder", "name": "Combi DVD folders", "children": [] },
-    { "id": "I1SXE93", "type": "folder", "name": "Maestro Kirpal con subtitulos", "children": [] },
-    {
-      "id": "I1SXE97",
-      "type": "folder",
-      "name": "Sadhu Ram Ji",
-      "children": [
-        { "id": "I2SXE98", "type": "folder", "name": "Bhandara Sadhu Ram 2021 Subachoque", "children": [] },
-        { "id": "I2SXE99", "type": "folder", "name": "Bhandara Sadhu Ram Ji 2024 Subachoque", "children": [] },
-        {
-          "id": "media-1",
-          "type": "video",
-          "name": "Baba Ji En Australia 2004 Oct 26.mp4",
-          "url": "https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/Videos/Sadhu%20Ram%20Ji/Baba%20Ji%20En%20Australia%202004%20Oct%2026.mp4",
-          "size": "405.3 MB",
-          "path": "Videos / Sadhu Ram Ji / Baba Ji En Australia 2004 Oct 26.mp4"
-        },
-        {
-          "id": "media-4",
-          "type": "video",
-          "name": "Baba Ji En Remembranza Constante.mp4",
-          "url": "https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/Videos/Sadhu%20Ram%20Ji/Baba%20Ji%20En%20Remembranza%20Constante.mp4",
-          "size": "145.9 MB",
-          "path": "Videos / Sadhu Ram Ji / Baba Ji En Remembranza Constante.mp4"
-        },
-        {
-          "id": "media-2",
-          "type": "video",
-          "name": "Sant Sadhu Ram Ji Mission Part 1 Sub-Esp.mp4",
-          "url": "https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/Videos/Sadhu%20Ram%20Ji/Sant%20Sadhu%20Ram%20Ji%20Mission%20Part%201%20Sub-Esp.mp4",
-          "size": "343.1 MB",
-          "path": "Videos / Sadhu Ram Ji / Sant Sadhu Ram Ji Mission Part 1 Sub-Esp.mp4"
-        },
-        {
-          "id": "media-5",
-          "type": "video",
-          "name": "Sant Sadhu Ram Ji Mission Pt 2 Sub-Esp.mp4",
-          "url": "https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/Videos/Sadhu%20Ram%20Ji/Sant%20Sadhu%20Ram%20Ji%20Mission%20Pt%202%20Sub-Esp.mp4",
-          "size": "332.4 MB",
-          "path": "Videos / Sadhu Ram Ji / Sant Sadhu Ram Ji Mission Pt 2 Sub-Esp.mp4"
-        }
-      ]
-    },
-    {
-      "id": "I1SXE100",
-      "type": "folder",
-      "name": "Sant Ji",
-      "children": [
-        { "id": "I2SXE101", "type": "folder", "name": "Bhandara SantJi_Julio-6-2021", "children": [] },
-        {
-          "id": "media-3",
-          "type": "video",
-          "name": "Dulces Recuerdos 30 Annos Subachoque -13m- 4472.mp4",
-          "url": "https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/Videos/Sant%20Ji/Dulces%20Recuerdos%2030%20Annos%20Subachoque%20-13m-%204472.mp4",
-          "size": "419.2 MB",
-          "path": "Videos / Sant Ji / Dulces Recuerdos 30 Annos Subachoque -13m- 4472.mp4"
-        }
-      ]
-    },
-    { "id": "I1SXE102", "type": "folder", "name": "Sant Kirpal Singh Ji", "children": [] },
-    { "id": "I1SXE112", "type": "folder", "name": "Sawan Singh Ji", "children": [] },
-    { "id": "I1SXE113", "type": "folder", "name": "Serie Lluvia de Gracia", "children": [] },
-    { "id": "I1SXE116", "type": "folder", "name": "Tulsi Sahib presentado por Sant Ji", "children": [] }
-  ]
+    "title":  "MS Videos",
+    "updatedAt":  "2026-08-19T19:41:35.2079593Z",
+    "items":  [
+                  {
+                      "id":  "source:sadhu",
+                      "source":  "sadhu",
+                      "type":  "folder",
+                      "name":  "Sant Sadhu Ram Ji",
+                      "children":  [
+                                       {
+                                           "id":  "sadhu:I0SXE5",
+                                           "remoteId":  "I0SXE5",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2002",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE10",
+                                           "remoteId":  "I0SXE10",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2003",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE74",
+                                           "remoteId":  "I0SXE74",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2004",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE190",
+                                           "remoteId":  "I0SXE190",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2005",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE309",
+                                           "remoteId":  "I0SXE309",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2006",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE432",
+                                           "remoteId":  "I0SXE432",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2007",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE486",
+                                           "remoteId":  "I0SXE486",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2008",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE518",
+                                           "remoteId":  "I0SXE518",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2009",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE592",
+                                           "remoteId":  "I0SXE592",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2010",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE676",
+                                           "remoteId":  "I0SXE676",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2011",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE713",
+                                           "remoteId":  "I0SXE713",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2012",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE744",
+                                           "remoteId":  "I0SXE744",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2013",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE775",
+                                           "remoteId":  "I0SXE775",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2014",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE824",
+                                           "remoteId":  "I0SXE824",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2015",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE849",
+                                           "remoteId":  "I0SXE849",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2016",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE886",
+                                           "remoteId":  "I0SXE886",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2017",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE923",
+                                           "remoteId":  "I0SXE923",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2018",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE952",
+                                           "remoteId":  "I0SXE952",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2019",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE1002",
+                                           "remoteId":  "I0SXE1002",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2020",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE1016",
+                                           "remoteId":  "I0SXE1016",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2021",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE1023",
+                                           "remoteId":  "I0SXE1023",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2022",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "sadhu:I0SXE1058",
+                                           "remoteId":  "I0SXE1058",
+                                           "source":  "sadhu",
+                                           "type":  "folder",
+                                           "name":  "2023",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       }
+                                   ],
+                      "loaded":  true
+                  },
+                  {
+                      "id":  "source:ajaib",
+                      "source":  "ajaib",
+                      "type":  "folder",
+                      "name":  "Sant Ajaib Singh Ji",
+                      "children":  [
+                                       {
+                                           "id":  "ajaib:I0SXE5",
+                                           "remoteId":  "I0SXE5",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1977 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE11",
+                                           "remoteId":  "I0SXE11",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1980",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE84",
+                                           "remoteId":  "I0SXE84",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1981",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE95",
+                                           "remoteId":  "I0SXE95",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1982",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE102",
+                                           "remoteId":  "I0SXE102",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1982 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE108",
+                                           "remoteId":  "I0SXE108",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1983",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE135",
+                                           "remoteId":  "I0SXE135",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1983 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE153",
+                                           "remoteId":  "I0SXE153",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1984",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE169",
+                                           "remoteId":  "I0SXE169",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1984 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE176",
+                                           "remoteId":  "I0SXE176",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1985",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE197",
+                                           "remoteId":  "I0SXE197",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1985 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE204",
+                                           "remoteId":  "I0SXE204",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1986",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE215",
+                                           "remoteId":  "I0SXE215",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1986 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE221",
+                                           "remoteId":  "I0SXE221",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1987",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE242",
+                                           "remoteId":  "I0SXE242",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1987 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE249",
+                                           "remoteId":  "I0SXE249",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1988",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE280",
+                                           "remoteId":  "I0SXE280",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1988 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE310",
+                                           "remoteId":  "I0SXE310",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1989",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE331",
+                                           "remoteId":  "I0SXE331",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1989 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE338",
+                                           "remoteId":  "I0SXE338",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1990",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE359",
+                                           "remoteId":  "I0SXE359",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1990 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE380",
+                                           "remoteId":  "I0SXE380",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1991",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE391",
+                                           "remoteId":  "I0SXE391",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1992",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE439",
+                                           "remoteId":  "I0SXE439",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1992 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE470",
+                                           "remoteId":  "I0SXE470",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1993",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE476",
+                                           "remoteId":  "I0SXE476",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1993 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE482",
+                                           "remoteId":  "I0SXE482",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1994",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE508",
+                                           "remoteId":  "I0SXE508",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1994 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE515",
+                                           "remoteId":  "I0SXE515",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1995",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE561",
+                                           "remoteId":  "I0SXE561",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1995 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE593",
+                                           "remoteId":  "I0SXE593",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1996",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE624",
+                                           "remoteId":  "I0SXE624",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1996 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE635",
+                                           "remoteId":  "I0SXE635",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1997",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE646",
+                                           "remoteId":  "I0SXE646",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "1997 H",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "ajaib:I0SXE652",
+                                           "remoteId":  "I0SXE652",
+                                           "source":  "ajaib",
+                                           "type":  "folder",
+                                           "name":  "Hindi Only",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       }
+                                   ],
+                      "loaded":  true
+                  },
+                  {
+                      "id":  "source:castellano",
+                      "source":  "castellano",
+                      "type":  "folder",
+                      "name":  "Colecciones en castellano",
+                      "children":  [
+                                       {
+                                           "id":  "castellano:I1SXE93",
+                                           "remoteId":  "I1SXE93",
+                                           "source":  "castellano",
+                                           "type":  "folder",
+                                           "name":  "Maestro Kirpal con subtitulos",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       },
+                                       {
+                                           "id":  "castellano:I1SXE113",
+                                           "remoteId":  "I1SXE113",
+                                           "source":  "castellano",
+                                           "type":  "folder",
+                                           "name":  "Serie Lluvia de Gracia",
+                                           "children":  [
+
+                                                        ],
+                                           "loaded":  false
+                                       }
+                                   ],
+                      "loaded":  true
+                  }
+              ]
 }

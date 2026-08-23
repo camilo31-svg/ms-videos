@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#17211f">
+    <meta id="theme-color" name="theme-color" content="#17211f">
     <meta name="description" content="Explora y reproduce los videos de Sant Mat en castellano.">
     <meta property="og:title" content="MS Videos">
     <meta property="og:description" content="Videos de Sant Mat en castellano, organizados para navegar por maestro y año.">
@@ -16,6 +16,18 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="icon" href="/icon-192.png" type="image/png">
     <link rel="apple-touch-icon" href="/icon-192.png">
+    <script>
+      (() => {
+        let theme;
+        try {
+          theme = localStorage.getItem("ms-videos-theme-v1");
+        } catch {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
     <link rel="stylesheet" href="/styles.css">
     <title>MS Videos</title>
   </head>
@@ -30,6 +42,9 @@
           </div>
         </div>
         <div class="header-actions">
+          <button id="theme-toggle" class="icon-button" type="button" aria-label="Activar modo oscuro" title="Modo oscuro">
+            <span aria-hidden="true">&#9790;</span>
+          </button>
           <button id="search-toggle" class="icon-button" type="button" aria-label="Buscar" title="Buscar">
             <span aria-hidden="true">⌕</span>
           </button>

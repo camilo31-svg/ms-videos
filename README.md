@@ -1,20 +1,24 @@
 # MS Videos
 
-Installable mobile-first player for the Videos section of the public Sant Mat Castellano catalog:
+Installable mobile-first player for three public Media Seva video collections:
 
-https://mediaseva1.dsmynas.net/_%20Sant%20Mat%20Castellano/_%20Sant%20Mat%20Castellano.html
+- Sant Sadhu Ram Ji
+- Sant Ajaib Singh Ji
+- Maestro Kirpal con subtitulos and Serie Lluvia de Gracia from Sant Mat Castellano
 
 ## Included
 
 - Video-only catalog with nested navigation, a back button, and breadcrumbs.
 - Visual year tiles for quick navigation.
 - Live folder loading, so new years and videos appear without rebuilding.
+- One row per recording, with a quality chooser when low, DVD, HD, 4K, MP4, or AVI variants are available.
 - Foreground video playback.
 - Audio-only mode for more reliable playback while the screen is locked.
 - Media Session controls for play, pause, previous, next, and 10-second seeking.
 - Lock-screen title, path, and MS Videos artwork on supported devices.
 - Device-local favorites, listening history, and resume position.
 - Direct download links where the repository permits downloads.
+- System-aware light and dark modes with the selected theme saved on the device.
 - Installable PWA shell with offline access to the app and catalog seed.
 
 ## Local preview
