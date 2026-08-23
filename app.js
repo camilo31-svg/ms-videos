@@ -37,6 +37,7 @@ const els = {
   installButton: document.querySelector("#install-button"),
   favoriteCount: document.querySelector("#desktop-favorite-count"),
   playerPane: document.querySelector("#player-pane"),
+  playerVisual: document.querySelector(".player-visual"),
   playerArtwork: document.querySelector("#player-artwork"),
   playerPlaceholder: document.querySelector("#player-placeholder"),
   video: document.querySelector("#video-player"),
@@ -44,6 +45,7 @@ const els = {
   nowLabel: document.querySelector("#now-playing-label"),
   nowTitle: document.querySelector("#now-playing-title"),
   nowPath: document.querySelector("#now-playing-path"),
+  pipButton: document.querySelector("#pip-button"),
   playerFavorite: document.querySelector("#player-favorite"),
   playButton: document.querySelector("#play-button"),
   previousButton: document.querySelector("#previous-button"),
@@ -53,6 +55,8 @@ const els = {
   audioMode: document.querySelector("#audio-mode-toggle"),
   downloadCurrent: document.querySelector("#download-current"),
   miniPlayer: document.querySelector("#mini-player"),
+  miniVisual: document.querySelector("#mini-visual"),
+  miniArtwork: document.querySelector("#mini-artwork"),
   miniTitle: document.querySelector("#mini-title"),
   miniStatus: document.querySelector("#mini-status"),
   miniPlay: document.querySelector("#mini-play"),
@@ -215,6 +219,7 @@ function setView(tab) {
     button.classList.toggle("active", button.dataset.tab === tab);
   });
   els.mobilePlayerTab.classList.remove("active");
+  updateVideoPresentation();
   render();
 }
 
@@ -584,6 +589,95 @@ function inactiveMedia() {
   return active === els.video ? els.audio : els.video;
 }
 
+function isMobileLayout() {
+  return window.matchMedia("(max-width: 860px)").matches;
+}
+
+function isStandaloneIOS() {
+  return /iP(?:hone|ad|od)/.test(navigator.userAgent) && (
+    navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches
+  );
+}
+
+function supportsWebkitPictureInPicture() {
+  try {
+    return typeof els.video.webkitSetPresentationMode === "function"
+      && typeof els.video.webkitSupportsPresentationMode === "function"
+      && els.video.webkitSupportsPresentationMode("picture-in-picture");
+  } catch {
+    return false;
+  }
+}
+
+function supportsPictureInPicture() {
+  if (isStandaloneIOS()) return false;
+  return Boolean(
+    (document.pictureInPictureEnabled && typeof els.video.requestPictureInPicture === "function")
+    || supportsWebkitPictureInPicture()
+  );
+}
+
+function pictureInPictureIsActive() {
+  return document.pictureInPictureElement === els.video
+    || els.video.webkitPresentationMode === "picture-in-picture";
+}
+
+function updatePictureInPictureButton() {
+  const supported = supportsPictureInPicture();
+  const active = pictureInPictureIsActive();
+  els.pipButton.classList.toggle("hidden", !supported);
+  els.pipButton.disabled = !supported || !state.current || state.audioMode || mediaKind(state.current) !== "video";
+  els.pipButton.querySelector("span").textContent = active ? "□" : "▣";
+  els.pipButton.setAttribute("aria-label", active ? "Cerrar video flotante" : "Abrir video flotante");
+  els.pipButton.title = active ? "Cerrar video flotante" : "Video flotante";
+}
+
+async function togglePictureInPicture() {
+  if (els.pipButton.disabled) return;
+  const active = pictureInPictureIsActive();
+
+  try {
+    if (active && document.pictureInPictureElement && typeof document.exitPictureInPicture === "function") {
+      await document.exitPictureInPicture();
+    } else if (active && typeof els.video.webkitSetPresentationMode === "function") {
+      els.video.webkitSetPresentationMode("inline");
+    } else if (document.pictureInPictureEnabled && typeof els.video.requestPictureInPicture === "function") {
+      await els.video.requestPictureInPicture();
+    } else if (supportsWebkitPictureInPicture()) {
+      els.video.webkitSetPresentationMode("picture-in-picture");
+    }
+  } catch {
+    if (supportsWebkitPictureInPicture()) {
+      try {
+        els.video.webkitSetPresentationMode("picture-in-picture");
+      } catch {}
+    }
+  }
+
+  updatePictureInPictureButton();
+}
+
+function updateVideoPresentation() {
+  const showLiveMiniVideo = Boolean(
+    state.current
+    && mediaKind(state.current) === "video"
+    && !state.audioMode
+    && isMobileLayout()
+    && !els.playerPane.classList.contains("mobile-open")
+  );
+  const target = showLiveMiniVideo ? els.miniVisual : els.playerVisual;
+
+  if (els.video.parentElement !== target) {
+    if (showLiveMiniVideo) els.miniVisual.append(els.video);
+    else els.playerVisual.insertBefore(els.video, els.audio);
+  }
+
+  els.video.controls = !showLiveMiniVideo;
+  els.video.classList.toggle("mini-video", showLiveMiniVideo);
+  els.miniVisual.classList.toggle("is-live", showLiveMiniVideo);
+  els.miniArtwork.classList.toggle("hidden", showLiveMiniVideo);
+}
+
 function playItem(item, queue = []) {
   const snapshot = fileSnapshot(item);
   const changed = state.current?.url !== snapshot.url;
@@ -646,6 +740,8 @@ function updateMediaVisibility() {
   els.video.classList.toggle("hidden", !showVideo);
   els.audio.classList.toggle("hidden", showVideo);
   els.playerArtwork.classList.toggle("hidden", showVideo);
+  updateVideoPresentation();
+  updatePictureInPictureButton();
 }
 
 function switchAudioMode(enabled) {
@@ -703,6 +799,7 @@ function updatePlaybackControls() {
   els.playButton.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
   els.miniPlay.querySelector("span").textContent = icon;
   els.miniPlay.setAttribute("aria-label", playing ? "Pausar" : "Reproducir");
+  els.miniPlay.title = playing ? "Pausar" : "Reproducir";
   els.miniStatus.textContent = playing ? (state.audioMode ? "Reproduciendo en modo audio" : "Reproduciendo") : "Pausado";
   if ("mediaSession" in navigator) navigator.mediaSession.playbackState = playing ? "playing" : "paused";
 }
@@ -744,8 +841,8 @@ function updateMediaSession() {
     artist: "Sant Mat Castellano",
     album: state.current.path || "MS Videos",
     artwork: [
-      { src: new URL("/icon-192.png", location.href).href, sizes: "192x192", type: "image/png" },
-      { src: new URL("/icon-512.png", location.href).href, sizes: "512x512", type: "image/png" }
+      { src: new URL("icon-192.png", document.baseURI).href, sizes: "192x192", type: "image/png" },
+      { src: new URL("icon-512.png", document.baseURI).href, sizes: "512x512", type: "image/png" }
     ]
   });
   updatePositionState();
@@ -826,6 +923,7 @@ function openPlayerMobile() {
   els.playerPane.classList.add("mobile-open");
   document.querySelectorAll(".mobile-nav-item").forEach((button) => button.classList.remove("active"));
   els.mobilePlayerTab.classList.add("active");
+  updateVideoPresentation();
 }
 
 function bindEvents() {
@@ -847,8 +945,12 @@ function bindEvents() {
   els.searchInput.addEventListener("input", handleSearch);
   els.searchClear.addEventListener("click", clearSearch);
   els.playerFavorite.addEventListener("click", () => state.current && toggleFavorite(state.current));
+  els.pipButton.addEventListener("click", togglePictureInPicture);
   els.playButton.addEventListener("click", togglePlayback);
-  els.miniPlay.addEventListener("click", togglePlayback);
+  els.miniPlay.addEventListener("click", (event) => {
+    event.stopPropagation();
+    togglePlayback();
+  });
   els.previousButton.addEventListener("click", () => skip(-1));
   els.nextButton.addEventListener("click", () => skip(1));
   els.seekBack.addEventListener("click", () => seekBy(-10));
@@ -860,6 +962,7 @@ function bindEvents() {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") saveCurrentProgress();
   });
+  window.addEventListener("resize", updateVideoPresentation);
 
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
@@ -876,6 +979,12 @@ function bindEvents() {
 
   attachMediaEvents(els.video);
   attachMediaEvents(els.audio);
+  els.video.addEventListener("enterpictureinpicture", updatePictureInPictureButton);
+  els.video.addEventListener("leavepictureinpicture", updatePictureInPictureButton);
+  els.video.addEventListener("webkitpresentationmodechanged", updatePictureInPictureButton);
+  if ("autoPictureInPicture" in els.video) els.video.autoPictureInPicture = true;
+  if ("disablePictureInPicture" in els.video) els.video.disablePictureInPicture = false;
+  updatePictureInPictureButton();
   configureMediaSessionHandlers();
 }
 

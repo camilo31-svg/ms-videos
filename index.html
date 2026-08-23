@@ -104,7 +104,7 @@
         <section id="player-pane" class="player-pane player-empty" aria-label="Reproductor">
           <div class="player-visual">
             <img id="player-artwork" src="./artwork.png" alt="MS Videos">
-            <video id="video-player" class="media-element hidden" controls playsinline preload="metadata"></video>
+            <video id="video-player" class="media-element hidden" controls playsinline autopictureinpicture preload="metadata"></video>
             <audio id="audio-player" class="media-element audio-element hidden" controls preload="metadata"></audio>
             <div id="player-placeholder" class="player-placeholder">
               <span class="placeholder-mark" aria-hidden="true">▶</span>
@@ -119,9 +119,14 @@
                 <h2 id="now-playing-title">Nada en reproduccion</h2>
                 <p id="now-playing-path" class="now-playing-path">Elige un video de la biblioteca</p>
               </div>
-              <button id="player-favorite" class="icon-button favorite-button" type="button" aria-label="Anadir a favoritos" title="Favorito" disabled>
-                <span aria-hidden="true">♡</span>
-              </button>
+              <div class="player-heading-actions">
+                <button id="pip-button" class="icon-button pip-button hidden" type="button" aria-label="Abrir video flotante" title="Video flotante" disabled>
+                  <span aria-hidden="true">▣</span>
+                </button>
+                <button id="player-favorite" class="icon-button favorite-button" type="button" aria-label="Anadir a favoritos" title="Favorito" disabled>
+                  <span aria-hidden="true">♡</span>
+                </button>
+              </div>
             </div>
 
             <div id="custom-controls" class="custom-controls" aria-label="Controles de reproduccion">
@@ -163,10 +168,14 @@
       </main>
 
       <div id="mini-player" class="mini-player hidden">
-        <img id="mini-artwork" src="./artwork.png" alt="">
-        <button id="mini-open" class="mini-copy" type="button">
-          <strong id="mini-title">Nada en reproduccion</strong>
-          <span id="mini-status">Pausado</span>
+        <button id="mini-open" class="mini-open" type="button" aria-label="Abrir reproductor">
+          <span id="mini-visual" class="mini-visual">
+            <img id="mini-artwork" src="./artwork.png" alt="">
+          </span>
+          <span class="mini-copy">
+            <strong id="mini-title">Nada en reproduccion</strong>
+            <span id="mini-status">Pausado</span>
+          </span>
         </button>
         <button id="mini-play" class="icon-button" type="button" aria-label="Reproducir">
           <span aria-hidden="true">▶</span>

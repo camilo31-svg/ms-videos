@@ -1,4 +1,4 @@
-const CACHE_NAME = "ms-videos-pages-v1";
+const CACHE_NAME = "ms-videos-pages-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
