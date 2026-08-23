@@ -38,6 +38,22 @@ test("app includes local library and lock-screen media support", async () => {
   assert.match(app, /calidades disponibles/);
 });
 
+test("mobile mini-player reuses the live video and shares playback state", async () => {
+  const app = await readFile(new URL("public/app.js", root), "utf8");
+  const html = await readFile(new URL("public/index.html", root), "utf8");
+  const css = await readFile(new URL("public/styles.css", root), "utf8");
+  assert.match(html, /id="mini-visual"/);
+  assert.match(html, /autopictureinpicture/);
+  assert.match(app, /els\.miniVisual\.append\(els\.video\)/);
+  assert.match(app, /els\.video\.controls = !showLiveMiniVideo/);
+  assert.match(app, /els\.miniPlay\.addEventListener\("click"/);
+  assert.match(app, /requestPictureInPicture/);
+  assert.match(app, /webkitSetPresentationMode/);
+  assert.match(css, /grid-template-columns: 96px minmax\(0, 1fr\)/);
+  const serviceWorker = await readFile(new URL("public/sw.js", root), "utf8");
+  assert.match(serviceWorker, /ms-videos-pages-v2/);
+});
+
 test("app supports system-aware light and dark themes with a saved preference", async () => {
   const app = await readFile(new URL("public/app.js", root), "utf8");
   const html = await readFile(new URL("public/index.html", root), "utf8");
