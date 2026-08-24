@@ -47,6 +47,7 @@ const els = {
   nowPath: document.querySelector("#now-playing-path"),
   pipButton: document.querySelector("#pip-button"),
   playerFavorite: document.querySelector("#player-favorite"),
+  playerClose: document.querySelector("#player-close"),
   playButton: document.querySelector("#play-button"),
   previousButton: document.querySelector("#previous-button"),
   nextButton: document.querySelector("#next-button"),
@@ -60,6 +61,7 @@ const els = {
   miniTitle: document.querySelector("#mini-title"),
   miniStatus: document.querySelector("#mini-status"),
   miniPlay: document.querySelector("#mini-play"),
+  miniClose: document.querySelector("#mini-close"),
   miniOpen: document.querySelector("#mini-open"),
   mobilePlayerTab: document.querySelector("#mobile-player-tab")
 };
@@ -188,6 +190,14 @@ function withVariant(item, variant) {
     size: variant.size || "",
     quality: variant.quality || variant.format || "Video"
   };
+}
+
+function isCurrentItem(item) {
+  if (!state.current) return false;
+  if (item.id && state.current.id) return item.id === state.current.id;
+  const itemUrls = [item.url, ...(item.variants || []).map((variant) => variant.url)].filter(Boolean);
+  const currentUrls = [state.current.url, ...(state.current.variants || []).map((variant) => variant.url)].filter(Boolean);
+  return itemUrls.some((url) => currentUrls.includes(url));
 }
 
 function variantDetails(variant) {
@@ -361,8 +371,11 @@ function createLibraryItem(item, queue) {
   const trailing = fragment.querySelector(".item-trailing");
   const actions = fragment.querySelector(".item-actions");
   const kind = item.type === "folder" ? "folder" : mediaKind(item);
+  const current = kind === "video" && isCurrentItem(item);
 
   article.dataset.kind = kind;
+  article.classList.toggle("is-current", current);
+  if (current) main.setAttribute("aria-current", "true");
   title.textContent = item.name;
   icon.textContent = kind === "folder" ? "▰" : kind === "video" ? "▶" : kind === "audio" ? "♪" : "▤";
 
@@ -710,7 +723,7 @@ function playItem(item, queue = [], { openPlayer = true } = {}) {
   els.downloadCurrent.download = snapshot.name;
   els.downloadCurrent.classList.remove("disabled");
   els.downloadCurrent.setAttribute("aria-disabled", "false");
-  [els.playerFavorite, els.playButton, els.previousButton, els.nextButton, els.seekBack, els.seekForward].forEach((control) => {
+  [els.playerFavorite, els.playerClose, els.playButton, els.previousButton, els.nextButton, els.seekBack, els.seekForward].forEach((control) => {
     control.disabled = false;
   });
 
@@ -928,6 +941,62 @@ function openPlayerMobile() {
   updateVideoPresentation();
 }
 
+function closePlayer() {
+  saveCurrentProgress();
+  clearTimeout(state.historyTimer);
+
+  if (document.pictureInPictureElement === els.video && typeof document.exitPictureInPicture === "function") {
+    document.exitPictureInPicture().catch(() => {});
+  } else if (els.video.webkitPresentationMode === "picture-in-picture" && typeof els.video.webkitSetPresentationMode === "function") {
+    els.video.webkitSetPresentationMode("inline");
+  }
+
+  [els.video, els.audio].forEach((media) => {
+    media.pause();
+    media.removeAttribute("src");
+    media.load();
+    media.classList.add("hidden");
+  });
+
+  state.current = null;
+  state.queue = [];
+  els.body.classList.remove("has-media");
+  els.playerPane.classList.remove("mobile-open");
+  els.playerPane.classList.add("player-empty");
+  els.playerArtwork.classList.remove("hidden");
+  els.playerPlaceholder.classList.remove("hidden");
+  els.miniPlayer.classList.add("hidden");
+  els.nowLabel.textContent = "Reproductor";
+  els.nowTitle.textContent = "Nada en reproduccion";
+  els.nowPath.textContent = "Elige un video de la biblioteca";
+  els.miniTitle.textContent = "Nada en reproduccion";
+  els.miniStatus.textContent = "Pausado";
+  els.audioMode.disabled = true;
+  els.downloadCurrent.href = "#";
+  els.downloadCurrent.removeAttribute("download");
+  els.downloadCurrent.classList.add("disabled");
+  els.downloadCurrent.setAttribute("aria-disabled", "true");
+  els.playerFavorite.classList.remove("is-favorite");
+  els.playerFavorite.querySelector("span").textContent = "♡";
+  els.playerFavorite.setAttribute("aria-label", "Anadir a favoritos");
+  els.playerFavorite.title = "Favorito";
+  [els.playerFavorite, els.playerClose, els.playButton, els.previousButton, els.nextButton, els.seekBack, els.seekForward].forEach((control) => {
+    control.disabled = true;
+  });
+  document.querySelectorAll("[data-tab]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === state.activeTab);
+  });
+  els.mobilePlayerTab.classList.remove("active");
+  updateVideoPresentation();
+  updatePlaybackControls();
+  updatePictureInPictureButton();
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.metadata = null;
+    navigator.mediaSession.playbackState = "none";
+  }
+  render();
+}
+
 function bindEvents() {
   applyTheme(preferredTheme());
   els.themeToggle.addEventListener("click", () => {
@@ -947,12 +1016,14 @@ function bindEvents() {
   els.searchInput.addEventListener("input", handleSearch);
   els.searchClear.addEventListener("click", clearSearch);
   els.playerFavorite.addEventListener("click", () => state.current && toggleFavorite(state.current));
+  els.playerClose.addEventListener("click", closePlayer);
   els.pipButton.addEventListener("click", togglePictureInPicture);
   els.playButton.addEventListener("click", togglePlayback);
   els.miniPlay.addEventListener("click", (event) => {
     event.stopPropagation();
     togglePlayback();
   });
+  els.miniClose.addEventListener("click", closePlayer);
   els.previousButton.addEventListener("click", () => skip(-1));
   els.nextButton.addEventListener("click", () => skip(1));
   els.seekBack.addEventListener("click", () => seekBy(-10));
