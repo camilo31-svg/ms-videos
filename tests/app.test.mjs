@@ -51,7 +51,7 @@ test("mobile mini-player reuses the live video and shares playback state", async
   assert.match(app, /webkitSetPresentationMode/);
   assert.match(css, /grid-template-columns: 96px minmax\(0, 1fr\)/);
   const serviceWorker = await readFile(new URL("public/sw.js", root), "utf8");
-  assert.match(serviceWorker, /ms-videos-pages-v4/);
+  assert.match(serviceWorker, /ms-videos-pages-v5/);
 });
 
 test("selecting a video opens the mobile player until a library tab is chosen", async () => {
@@ -74,6 +74,17 @@ test("the active video stays highlighted across qualities until the player is cl
   assert.match(html, /id="player-close"/);
   assert.match(html, /id="mini-close"/);
   assert.match(css, /\.library-item\.is-current/);
+});
+
+test("opening the active video marks its selected quality", async () => {
+  const app = await readFile(new URL("public/app.js", root), "utf8");
+  const css = await readFile(new URL("public/styles.css", root), "utf8");
+  assert.match(app, /function isCurrentVariant\(item, variant\)/);
+  assert.match(app, /state\.current\?\.url === variant\.url/);
+  assert.match(app, /quality-row\$\{current \? " is-current" : ""\}/);
+  assert.match(app, /Calidad seleccionada/);
+  assert.match(app, /marker\.textContent = current \? "✓" : "▶"/);
+  assert.match(css, /\.quality-row\.is-current/);
 });
 
 test("app supports system-aware light and dark themes with a saved preference", async () => {
