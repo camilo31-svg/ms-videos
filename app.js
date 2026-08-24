@@ -200,6 +200,10 @@ function isCurrentItem(item) {
   return itemUrls.some((url) => currentUrls.includes(url));
 }
 
+function isCurrentVariant(item, variant) {
+  return isCurrentItem(item) && state.current?.url === variant.url;
+}
+
 function variantDetails(variant) {
   const format = variant.format || "";
   const showFormat = format && !normalize(variant.quality).includes(normalize(format));
@@ -436,13 +440,17 @@ function toggleQualityPanel(article, main, item, variants, queue) {
     const quality = document.createElement("strong");
     const detail = document.createElement("small");
     const selected = withVariant(item, variant);
-    row.className = "quality-row";
+    const current = isCurrentVariant(item, variant);
+    row.className = `quality-row${current ? " is-current" : ""}`;
     play.type = "button";
     play.className = "quality-option";
-    play.setAttribute("aria-label", `Reproducir ${item.name} en calidad ${variant.quality}`);
+    play.setAttribute("aria-label", current
+      ? `Calidad seleccionada: ${variant.quality}`
+      : `Reproducir ${item.name} en calidad ${variant.quality}`);
+    if (current) play.setAttribute("aria-current", "true");
     marker.className = "quality-play";
     marker.setAttribute("aria-hidden", "true");
-    marker.textContent = "▶";
+    marker.textContent = current ? "✓" : "▶";
     copy.className = "quality-copy";
     quality.textContent = variant.quality || variant.format || "Video";
     detail.textContent = variantDetails(variant);

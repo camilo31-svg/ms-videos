@@ -633,6 +633,15 @@ input:focus-visible {
   border-top: 1px solid var(--subtle-fill);
 }
 
+.quality-row.is-current {
+  background: var(--teal-soft);
+  box-shadow: inset 3px 0 0 var(--teal);
+}
+
+.quality-row.is-current .quality-copy strong {
+  color: var(--teal);
+}
+
 .quality-option {
   display: grid;
   min-width: 0;
@@ -650,6 +659,10 @@ input:focus-visible {
 
 .quality-option:hover {
   background: var(--teal-soft);
+}
+
+.quality-row.is-current .quality-option:hover {
+  background: transparent;
 }
 
 .quality-play {
