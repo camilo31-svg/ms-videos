@@ -509,6 +509,17 @@ input:focus-visible {
   background: var(--row-hover);
 }
 
+.library-item.is-current,
+.library-item.is-current:hover {
+  background: var(--wine-soft);
+  box-shadow: inset 4px 0 0 var(--wine);
+}
+
+.library-item.is-current .item-title,
+.library-item.is-current .item-trailing {
+  color: var(--wine);
+}
+
 .item-main {
   display: grid;
   min-width: 0;
@@ -801,6 +812,16 @@ input:focus-visible {
   border: 1px solid rgba(255, 255, 255, 0.18);
   color: #ffffff;
   font-size: 19px;
+}
+
+.player-close-button {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.player-close-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .pip-button:hover:not(:disabled) {
@@ -1107,7 +1128,7 @@ input:focus-visible {
     left: 0;
     display: grid;
     height: var(--mini-player-height);
-    grid-template-columns: minmax(0, 1fr) 48px;
+    grid-template-columns: minmax(0, 1fr) 48px 48px;
     align-items: center;
     gap: 10px;
     padding: 7px 10px;
