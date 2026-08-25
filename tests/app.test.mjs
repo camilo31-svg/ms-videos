@@ -51,7 +51,16 @@ test("mobile mini-player reuses the live video and shares playback state", async
   assert.match(app, /webkitSetPresentationMode/);
   assert.match(css, /grid-template-columns: 96px minmax\(0, 1fr\)/);
   const serviceWorker = await readFile(new URL("public/sw.js", root), "utf8");
-  assert.match(serviceWorker, /ms-videos-pages-v5/);
+  assert.match(serviceWorker, /ms-videos-pages-v6/);
+});
+
+test("switching from lock-screen audio back to video preserves the exact position", async () => {
+  const app = await readFile(new URL("public/app.js", root), "utf8");
+  assert.match(app, /function continueAtPosition\(media, time, shouldResume\)/);
+  assert.match(app, /media\.currentTime = Math\.max\(0, Math\.min\(time, duration\)\)/);
+  assert.match(app, /if \(media\.readyState >= 1\) applyPosition\(\)/);
+  assert.match(app, /else media\.addEventListener\("loadedmetadata", applyPosition, \{ once: true \}\)/);
+  assert.match(app, /continueAtPosition\(nextMedia, time, shouldResume\)/);
 });
 
 test("selecting a video opens the mobile player until a library tab is chosen", async () => {
