@@ -766,6 +766,18 @@ function updateMediaVisibility() {
   updatePictureInPictureButton();
 }
 
+function continueAtPosition(media, time, shouldResume) {
+  const applyPosition = () => {
+    const duration = Number.isFinite(media.duration) && media.duration > 0 ? media.duration : time;
+    media.currentTime = Math.max(0, Math.min(time, duration));
+    if (shouldResume) media.play().catch(() => updatePlaybackControls());
+    else updatePlaybackControls();
+  };
+
+  if (media.readyState >= 1) applyPosition();
+  else media.addEventListener("loadedmetadata", applyPosition, { once: true });
+}
+
 function switchAudioMode(enabled) {
   if (!state.current || mediaKind(state.current) !== "video") return;
   const oldMedia = activeMedia();
@@ -780,10 +792,7 @@ function switchAudioMode(enabled) {
     nextMedia.src = state.current.url;
     nextMedia.load();
   }
-  nextMedia.addEventListener("loadedmetadata", () => {
-    if (Number.isFinite(nextMedia.duration)) nextMedia.currentTime = Math.min(time, nextMedia.duration || time);
-    if (shouldResume) nextMedia.play().catch(() => updatePlaybackControls());
-  }, { once: true });
+  continueAtPosition(nextMedia, time, shouldResume);
 
   els.nowLabel.textContent = ["Video", state.current.quality, enabled ? "modo audio" : ""].filter(Boolean).join(" · ");
   updateMediaVisibility();
